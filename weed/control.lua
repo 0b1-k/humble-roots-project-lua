@@ -188,7 +188,7 @@ while true do
   if cfg.replay.record then
     replay.setRecordDuration(cfg.replay.recordDuration)
   end
-  if cfg.serial.port.enabled then
+  if cfg.serial.enabled then
     local result, errorDetails = pcall(gateway.run, cfg.serial.port, cfg.serial.baudrate, onData, onIdle)
     if not result then
       log.fatal(errorDetails)
