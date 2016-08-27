@@ -18,7 +18,7 @@ sudo apt-get install git
 
 ***LuaDist***
 
-Install (LuaDist)[http://luadist.org/].
+Install [LuaDist](http://luadist.org/).
 
 Install the LuaDist packages required by the Humble Roots Project:
 
@@ -30,19 +30,19 @@ Install the LuaDist packages required by the Humble Roots Project:
 ***Humble Roots Project***
 
 ```
-	cd ~
-	git clone https://github.com/fabienroyer/humble-roots-project-lua.git
-	cd humble-roots-project-lua
-	cp -R * ~/LuaDist/share
-	cd ~/LuaDist/share/lua-serial
-	mkdir build/lin32
-	make
-	cp ./src/serial.lua ~/LuaDist/lib/lua
-	cp ./build/lin32/libserial.so ~/LuaDist/lib/lua
-	cd ~/LuaDist/share/weed/config
-	mv config.tpl config.json
-	cd ..
-	sudo ./../../bin/lua control.lua
+cd ~
+git clone https://github.com/fabienroyer/humble-roots-project-lua.git
+cd humble-roots-project-lua
+cp -R * ~/LuaDist/share
+cd ~/LuaDist/share/lua-serial
+mkdir build/lin32
+make
+cp ./src/serial.lua ~/LuaDist/lib/lua
+cp ./build/lin32/libserial.so ~/LuaDist/lib/lua
+cd ~/LuaDist/share/weed/config
+mv config.tpl config.json
+cd ..
+sudo ./../../bin/lua control.lua
 ```
 
 On startup, the project will show a console output like this:
@@ -81,17 +81,17 @@ On startup, the project will show a console output like this:
 
 ***InfluxDB***
 
-The Humble Roots Project logs all sensor data to (influxdb)[https://influxdata.com/time-series-platform/influxdb/].
+The Humble Roots Project logs all sensor data to [influxdb](https://influxdata.com/time-series-platform/influxdb/).
 Once influxdb is installed, create a 'sensors' database and enable influxdb logging in ./config/config.json.
 
 ***Grafana***
 
-The Humble Roots Project uses Grafana to plot sensor data.
+The Humble Roots Project uses Grafana to plot sensor data. Enable it in ./config/config.json.
 Once Grafana is installed, configure it to use the influxdb instance previously installed and import the
 Humble Roots Project dashboard from ./dashboard/grafana/Lab.json.
 
 ***smsd***
 
-The Humble Roots Project relies on (smsd)[http://smstools3.kekekasvi.com/] to send and receive SMS notifications if enabled.
+The Humble Roots Project relies on [smsd](http://smstools3.kekekasvi.com/) to send and receive SMS notifications if enabled.
 Once smsd is installed, enable it in ./config/config.json.
 
