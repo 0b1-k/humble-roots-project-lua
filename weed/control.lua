@@ -39,7 +39,7 @@ local function writeSingleValueToDB(measurement, tag, value)
 end
 
 local function onData(data)
-  if not cfg.serial.enabled then
+  if not cfg.serial.enabled and not cfg.replay.enabled then
     log.debug(string.format("Ignoring: %s", data))
     return
   end
@@ -188,11 +188,20 @@ while true do
   if cfg.replay.record then
     replay.setRecordDuration(cfg.replay.recordDuration)
   end
-  local result, errorDetails = pcall(gateway.run, cfg.serial.port, cfg.serial.baudrate, onData, onIdle)
-  if not result then
-    log.fatal(errorDetails)
-    _ENV.io.Serial.del_us(1000000)
+  if cfg.serial.port.enabled then
+    local result, errorDetails = pcall(gateway.run, cfg.serial.port, cfg.serial.baudrate, onData, onIdle)
+    if not result then
+      log.fatal(errorDetails)
+      _ENV.io.Serial.del_us(1000000)
+    end
+  else
+    listening = true
+    while true do
+      onIdle()
+      _ENV.io.Serial.del_us(10)
+    end
   end
+  
   listen.shutdown()
   log.info("Gateway stopped")
 end
