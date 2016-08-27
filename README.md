@@ -65,7 +65,7 @@ On startup, the project will show a console output like this:
 			           \ .\  |.|  /. /
 			 _ -_^_^_^_-  \ \\ // /  -_^_^_^_- _
 			   - -/_/_/- ^ ^  |  ^ ^ -\_\_\- -
-					  |
+					  	|
 
 
 [INFO  14:15:30] control.lua:180: Copyright (c) 2016 Fabien Royer
