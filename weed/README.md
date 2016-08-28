@@ -8,8 +8,8 @@ on sustainability.
 
 For in-depth details about the project, check out the [project documentation](./docs/HumbleRootsProject.pdf).
 
-This version of the project is a complete re-write of the former Python codebase in Lua.
-Lua was found to provide greater reliability for long-running processes It also takes far less resources than the 
+This version of the project is a complete Lua re-write of the former Python codebase.
+Lua was found to provide greater reliability for long-running processes. It also takes far less resources than the 
 Python implementation and is ideal on low-power systems such as the Raspberry Pi.
 This implementation is single-threaded to prevent potential deadlocks and race-conditions.
 
