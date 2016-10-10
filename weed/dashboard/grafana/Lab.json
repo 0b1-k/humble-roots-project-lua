@@ -774,7 +774,7 @@
           },
           "yaxes": [
             {
-              "format": "humidity",
+              "format": "none",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -782,7 +782,7 @@
               "show": true
             },
             {
-              "format": "humidity",
+              "format": "none",
               "label": null,
               "logBase": 1,
               "max": null,
@@ -1356,6 +1356,6 @@
   },
   "refresh": "10s",
   "schemaVersion": 12,
-  "version": 44,
+  "version": 45,
   "links": []
 }
