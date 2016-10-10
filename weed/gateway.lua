@@ -21,15 +21,18 @@ local function send(cmdFinal, sendIfNoPendingRetries)
     if retryObj.retries > 0 then
       log.warn(string.format("Pending retries %s for %s", tostring(retryObj.retries), cmdFinal))
       retryObj.pendingCount = retryObj.pendingCount + 1
-      if retryObj.pendingCount >= retryMax and retryObj.retries >= retryMax then
-        retryObj.retries = 0
+      if retryObj.pendingCount >= retryMax then
+        log.error(string.format("Flushing pending retry for %s", cmdFinal))
+        retryQueue[cmdFinal] = nil
       end
     else
-      log.warn(string.format("Cleaning pending retry for %s", cmdFinal))
+      log.error(string.format("Clearing pending retry for %s", cmdFinal))
       retryQueue[cmdFinal] = nil
     end
+    _ENV.io.Serial.del_us(1000 * 10)
     return
   end
+  
   local sentBytes = port:write(cmdFinal .. "\n")
   port:drainTX()
   if sentBytes ~= #cmdFinal + #"\n" then
@@ -37,10 +40,12 @@ local function send(cmdFinal, sendIfNoPendingRetries)
     log.fatal(errorMsg)
     error(errorMsg)
   end
+  
   if sendIfNoPendingRetries then
       retryQueue[cmdFinal] = getRetryObj()
       log.info(string.format("Sent: %s", cmdFinal))
   end
+  
   _ENV.io.Serial.del_us(1000 * 10)
 end
 
@@ -60,9 +65,11 @@ end
 
 local function updateRetryQueue(msg)
   local ackReceived = false
+  
   if msg.tx == "ack" then
     ackReceived = true
   end
+  
   msg["tx"] = nil
   local cmdFinal = rules.encode(msg)
   if ackReceived then
