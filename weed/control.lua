@@ -39,6 +39,8 @@ local function writeSingleValueToDB(measurement, tag, value)
 end
 
 local function onData(data)
+  log.trace(string.format("rx: %s", data))
+  
   if not cfg.serial.enabled and not cfg.replay.enabled then
     log.debug(string.format("Ignoring: %s", data))
     return
@@ -48,6 +50,7 @@ local function onData(data)
     listening = true
     return
   end
+  
   if cfg.replay.record then
     replay.record(data)
   end
@@ -55,6 +58,7 @@ local function onData(data)
   local msgResolved = rules.resolve(msg, cfg)
   if msg.node ~= nil and msg.tx == nil and msg.t ~= nil then
     -- sensor data was received...
+    log.info(string.format("Sensor: %s", data))
     heartbeat.pulse(msgResolved.node)
     local devRules = cfg.control[msg.t] 
     if devRules ~= nil then
