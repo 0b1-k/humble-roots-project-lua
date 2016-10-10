@@ -185,6 +185,10 @@ local function eval(rule, msg, gateway, cfg)
   
   local nodeName = cfg.node[msg.node]
   
+  if nodeName ~= rule.node then
+    return
+  end
+
   if rule.alert ~= nil and rule.node ~= nil and msg.node ~= nil and nodeName == rule.node then
     if evalCondition(value, rule.alert, msg) then
       sendAlert(cfg, value, rule, nodeName)
