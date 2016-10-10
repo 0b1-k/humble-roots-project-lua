@@ -45,7 +45,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 2,
+          "linewidth": 1,
           "links": [],
           "nullPointMode": "connected",
           "percentage": false,
@@ -310,7 +310,9 @@
           ]
         },
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "Filter (on/off)": "#E5A8E2"
+          },
           "bars": false,
           "datasource": null,
           "editable": true,
@@ -336,7 +338,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 2,
+          "linewidth": 1,
           "links": [],
           "nullPointMode": "connected",
           "percentage": false,
@@ -599,7 +601,7 @@
             {
               "format": "short",
               "label": null,
-              "logBase": 1,
+              "logBase": 10,
               "max": null,
               "min": null,
               "show": true
@@ -607,7 +609,7 @@
             {
               "format": "short",
               "label": null,
-              "logBase": 1,
+              "logBase": 10,
               "max": null,
               "min": null,
               "show": true
@@ -648,7 +650,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 2,
+          "linewidth": 1,
           "links": [],
           "nullPointMode": "connected",
           "percentage": false,
@@ -1004,7 +1006,7 @@
             "values": true
           },
           "lines": true,
-          "linewidth": 2,
+          "linewidth": 1,
           "links": [],
           "nullPointMode": "connected",
           "percentage": false,
@@ -1318,7 +1320,7 @@
     }
   ],
   "time": {
-    "from": "now/d",
+    "from": "now-3h",
     "to": "now"
   },
   "timepicker": {
@@ -1354,6 +1356,6 @@
   },
   "refresh": "10s",
   "schemaVersion": 12,
-  "version": 35,
+  "version": 44,
   "links": []
 }
