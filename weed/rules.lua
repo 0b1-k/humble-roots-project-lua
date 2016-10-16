@@ -170,7 +170,7 @@ local function sendCommand(cmd, gateway, cfg)
   local cmdDecoded = decode(cmd)
   local cmdTable = resolve(cmdDecoded, cfg)
   local cmdFinal = encode(cmdTable)
-  gateway.send(cmdFinal, true)
+  gateway.send(cmdFinal, nil)
 end
 
 local function eval(rule, msg, gateway, cfg)

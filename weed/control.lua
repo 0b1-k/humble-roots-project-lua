@@ -92,7 +92,7 @@ local function onData(data)
     end
   elseif msg.node ~= nil and msg.tx ~= nil and msg.t == nil then
     -- a command ack/nak was received...
-    gateway.updateRetryQueue(msg)
+    gateway.retry(msg)
     writeSingleValueToDB("tx", msgResolved.node, msgResolved.tx)
   else
     log.warn(string.format("Discarded: %s", data))
@@ -186,6 +186,9 @@ log.info("Copyright (c) 2016 Fabien Royer")
 while true do
   listening = false
   _ENV.log.level = cfg.log.level
+  if cfg.log.file ~= nil then
+    _ENV.log.outfile = cfg.log.file
+  end
   log.info("Gateway started")
   heartbeat.initialize(cfg)
   listen.initialize(cfg.shell.bind, cfg.shell.port)

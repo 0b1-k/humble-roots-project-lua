@@ -9,30 +9,12 @@ local stopEventLoop = false
 
 local function getRetryObj()
   local obj = {
-    ["retries"] = retryMax,
-    ["pendingCount"] = 0
+    ["retries"] = retryMax
   }
   return obj
 end
 
-local function send(cmdFinal, sendIfNoPendingRetries)
-  local retryObj = retryQueue[cmdFinal]
-  if sendIfNoPendingRetries and retryObj ~= nil then
-    if retryObj.retries > 0 then
-      log.warn(string.format("Pending retries %s for %s", tostring(retryObj.retries), cmdFinal))
-      retryObj.pendingCount = retryObj.pendingCount + 1
-      if retryObj.pendingCount >= retryMax then
-        log.error(string.format("Flushing pending retry for %s", cmdFinal))
-        retryQueue[cmdFinal] = nil
-      end
-    else
-      log.error(string.format("Clearing pending retry for %s", cmdFinal))
-      retryQueue[cmdFinal] = nil
-    end
-    _ENV.io.Serial.del_us(1000 * 10)
-    return
-  end
-  
+local function send(cmdFinal, retryObj)  
   local sentBytes = port:write(cmdFinal .. "\n")
   port:drainTX()
   if sentBytes ~= #cmdFinal + #"\n" then
@@ -40,42 +22,36 @@ local function send(cmdFinal, sendIfNoPendingRetries)
     log.fatal(errorMsg)
     error(errorMsg)
   end
-  
-  if sendIfNoPendingRetries then
-      retryQueue[cmdFinal] = getRetryObj()
-      log.info(string.format("Sent: %s", cmdFinal))
+  if retryObj == nil then
+    retryQueue[cmdFinal] = getRetryObj()
   end
-  
+  log.info(string.format("Sent: %s", cmdFinal))
   _ENV.io.Serial.del_us(1000 * 10)
 end
 
-local function retry(cmdFinal)
+local function retry(msg)
+  local ackReceived = false
+  if msg.tx == "ack" then
+    ackReceived = true
+  end
+  msg["tx"] = nil
+  local cmdFinal = rules.encode(msg)
+  if ackReceived then
+    retryQueue[cmdFinal] = nil
+    return
+  end
   local retryObj = retryQueue[cmdFinal]
   if retryObj ~= nil then
     retryObj.retries = retryObj.retries - 1
     if retryObj.retries > 0 then
-      send(cmdFinal, false)
+      send(cmdFinal, retryObj)
       log.warn(string.format("Retry: %s (#%s)", cmdFinal, tostring(retryObj.retries)))
     else
       log.error(string.format("Retries exceeded: %s", cmdFinal))
       retryQueue[cmdFinal] = nil
     end
-  end
-end
-
-local function updateRetryQueue(msg)
-  local ackReceived = false
-  
-  if msg.tx == "ack" then
-    ackReceived = true
-  end
-  
-  msg["tx"] = nil
-  local cmdFinal = rules.encode(msg)
-  if ackReceived then
-    retryQueue[cmdFinal] = nil
   else
-    retry(cmdFinal)
+    log.error(string.format("Anomaly! Missing retry obj for nak'ed cmd: %s!", cmdFinal))
   end
 end
 
@@ -135,6 +111,5 @@ local export = {}
 export.run = run
 export.send = send
 export.retry = retry
-export.updateRetryQueue = updateRetryQueue
 export.stop = stop
 return export
