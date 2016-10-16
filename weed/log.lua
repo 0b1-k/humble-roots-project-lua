@@ -75,7 +75,7 @@ for i, x in ipairs(modes) do
                         msg))
 
     -- Output to log file
-    if log.outfile then
+    if log.outfile ~= nil then
       local fp = io.open(log.outfile, "a")
       local str = string.format("[%-6s%s] %s: %s\n",
                                 nameupper, os.date(), lineinfo, msg)
