@@ -17,25 +17,22 @@
     You should have received a copy of the GNU General Public License
     along with "HRP".  If not, see <http://www.gnu.org/licenses/>.
 */
-#include <EEPROMex.h>
-#include <EEPROMVar.h>
+
 #include <PString.h>
 #include <LowPower.h>
 #include <RFM69.h>
-#include <SPI.h>
 
 #define LOW_BATTERY_THRESHOLD    3.5
 #define EXTERNAL_POWER_VOLTAGE   4.3
 #define SERIAL_BAUD              115200
 #define NETWORK_ID               100
 #define GATEWAY_ID               1
-#define THIS_NODE_ID             2
+#define THIS_NODE_ID             2 // or 60
 #define FREQUENCY                RF69_433MHZ
 #define SOIL_PROBE               A1
 #define BAT_VOLTAGE              A7
 #define DRY_SOIL_CALIB           30
 #define WET_SOIL_CALIB           700
-#define MAGIC                    31415
 #define RH_MAX_SAMPLES           10
 #define POWER_DOWN_SECS          60
 
@@ -45,42 +42,14 @@ byte CryptoKey[] = "<YourCryptoKey!>";
 PString str(Buffer, sizeof(Buffer));
 int CalibDry = DRY_SOIL_CALIB;
 int CalibWet = WET_SOIL_CALIB;
-int MagicAddr = EEPROM.getAddress(sizeof(int));
-int CryptoKeyAddr = EEPROM.getAddress(sizeof(CryptoKey));
-int CalibDryAddr = EEPROM.getAddress(sizeof(long));
-int CalibWetAddr = EEPROM.getAddress(sizeof(long));
 
 void setup() {
   Serial.begin(SERIAL_BAUD);
-  InitConfig();
-  delay(10);
   radio.initialize(FREQUENCY, THIS_NODE_ID, NETWORK_ID);
   radio.encrypt((const char*)CryptoKey);
   pinMode(SOIL_PROBE, INPUT);
   pinMode(BAT_VOLTAGE, INPUT);
   Serial.println("Ready");
-}
-
-void InitConfig() {
-  if (EEPROM.readInt(MagicAddr) != MAGIC) {
-    EEPROM.writeBlock<byte>(CryptoKeyAddr, CryptoKey, sizeof(CryptoKey));
-    EEPROM.writeLong(CalibDryAddr, DRY_SOIL_CALIB);
-    EEPROM.writeLong(CalibWetAddr, WET_SOIL_CALIB);
-    EEPROM.writeInt(MagicAddr, MAGIC);
-    Serial.println("EE init.");
-  }
-
-  EEPROM.readBlock<byte>(CryptoKeyAddr, CryptoKey, sizeof(CryptoKey));
-  CalibDry = EEPROM.readLong(CalibDryAddr);
-  CalibWet = EEPROM.readLong(CalibWetAddr);
-
-  Serial.print("Key: ");
-  Serial.println((const char*)CryptoKey);
-  Serial.print("Dry: ");
-  Serial.println(CalibDry);
-  Serial.print("Wet: ");
-  Serial.println(CalibWet);
-
   Serial.flush();
 }
 
@@ -104,7 +73,6 @@ int GetSoilRH(int samples) {
 
 void loop() {
   SendData();
-  Serial.flush();
   radio.sleep();
   PowerDown(POWER_DOWN_SECS);
 }
@@ -133,9 +101,11 @@ void SendData() {
   Serial.print(str.length());
   Serial.print(")");
 
-  if (radio.sendWithRetry(GATEWAY_ID, Buffer, str.length()))
+  if (radio.sendWithRetry(GATEWAY_ID, Buffer, str.length())) {
     Serial.println(":ACK");
-  else
-    Serial.println(":NACK");
+  } else {
+    Serial.println(":NAK");
+  }
+  Serial.flush();
 }
 
