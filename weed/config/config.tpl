@@ -37,12 +37,14 @@
     "30": "tank",
     "40": "climate",
     "50": "valve",
+    "60": "plant.top",
     "plant": "2",
     "sump": "4",
     "relay": "20",
     "tank": "30",
     "climate": "40",
-    "valve": "50"
+    "valve": "50",
+    "plant.top", "60"
   },
   "r":	{
     "0": "dh",
@@ -108,10 +110,17 @@
       "alert": {"op": "<", "setpoint": -80.0, "title": "Low signal strength alert"}
     }],
     "srh": [{
-      "enabled": false,
+      "enabled": true,
       "node": "plant",
       "value": "p",
-      "time": {"from": "18:50", "to": "19:00"},
+      "time": {"from": "18:50", "to": "19:05"},
+      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "node=relay&cmd=act&r=water&s=on"},
+      "off": {"cmd": "node=relay&cmd=act&r=water&s=off"}
+    },{
+      "enabled": true,
+      "node": "plant.top",
+      "value": "p",
+      "time": {"from": "18:50", "to": "19:05"},
       "on":  {"op": "<=", "setpoint": 95.0, "cmd": "node=relay&cmd=act&r=water&s=on"},
       "off": {"cmd": "node=relay&cmd=act&r=water&s=off"}
     }],
