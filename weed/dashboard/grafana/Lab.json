@@ -625,7 +625,10 @@
       "height": 346.61248779296875,
       "panels": [
         {
-          "aliasColors": {},
+          "aliasColors": {
+            "Plant Roots RH (%)": "#3F6833",
+            "Plant Top RH (%)": "#C15C17"
+          },
           "bars": false,
           "datasource": null,
           "editable": true,
@@ -647,7 +650,8 @@
             "min": true,
             "show": true,
             "total": false,
-            "values": true
+            "values": true,
+            "sortDesc": true
           },
           "lines": true,
           "linewidth": 1,
@@ -657,13 +661,61 @@
           "pointradius": 5,
           "points": false,
           "renderer": "flot",
-          "seriesOverrides": [],
+          "seriesOverrides": [
+            {
+              "alias": "Plant Roots RH (%)",
+              "yaxis": 1
+            }
+          ],
           "span": 12,
           "stack": false,
           "steppedLine": false,
           "targets": [
             {
-              "alias": "RH (%)",
+              "policy": "default",
+              "dsType": "influxdb",
+              "resultFormat": "time_series",
+              "tags": [
+                {
+                  "key": "node",
+                  "operator": "=",
+                  "value": "plant.top"
+                }
+              ],
+              "groupBy": [
+                {
+                  "type": "time",
+                  "params": [
+                    "$interval"
+                  ]
+                },
+                {
+                  "type": "fill",
+                  "params": [
+                    "null"
+                  ]
+                }
+              ],
+              "select": [
+                [
+                  {
+                    "type": "field",
+                    "params": [
+                      "value"
+                    ]
+                  },
+                  {
+                    "type": "mean",
+                    "params": []
+                  }
+                ]
+              ],
+              "refId": "C",
+              "measurement": "p",
+              "alias": "Plant Top RH (%)"
+            },
+            {
+              "alias": "Plant Roots RH (%)",
               "dsType": "influxdb",
               "groupBy": [
                 {
@@ -1356,6 +1408,6 @@
   },
   "refresh": "10s",
   "schemaVersion": 12,
-  "version": 46,
+  "version": 48,
   "links": []
 }
