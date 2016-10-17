@@ -627,7 +627,7 @@
         {
           "aliasColors": {
             "Plant Roots RH (%)": "#3F6833",
-            "Plant Top RH (%)": "#C15C17"
+            "Plant Top RH (%)": "#7EB26D"
           },
           "bars": false,
           "datasource": null,
@@ -1333,6 +1333,49 @@
                   "value": "plant"
                 }
               ]
+            },
+            {
+              "alias": "plant.top",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "$interval"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "null"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "rssi",
+              "policy": "default",
+              "refId": "G",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "mean"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "node",
+                  "operator": "=",
+                  "value": "plant.top"
+                }
+              ]
             }
           ],
           "timeFrom": null,
@@ -1372,8 +1415,8 @@
     }
   ],
   "time": {
-    "from": "now/d",
-    "to": "now"
+    "from": "2016-10-17T01:03:34.728Z",
+    "to": "2016-10-17T04:57:29.371Z"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -1406,8 +1449,8 @@
   "annotations": {
     "list": []
   },
-  "refresh": "10s",
+  "refresh": false,
   "schemaVersion": 12,
-  "version": 48,
+  "version": 50,
   "links": []
 }
