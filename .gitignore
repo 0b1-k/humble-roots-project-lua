@@ -187,3 +187,13 @@ luac.out
 /weed/arduino/soilrh/soilrh.ino~
 /weed/config/config.tpl~
 /weed/logs/readme.md~
+/luadist-git/dists/mobdebug-0.51/dist.info
+/mobdebug/example/README
+/mobdebug/example/auto/test.lua
+/mobdebug/example/autotest.lua
+/mobdebug/example/load.lua
+/mobdebug/example/loop.lua
+/mobdebug/example/server.lua
+/mobdebug/example/start.lua
+/weed/logs/hroots-error.log
+/weed/logs/hroots.log
