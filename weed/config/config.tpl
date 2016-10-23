@@ -1,7 +1,7 @@
 {
   "log": {
     "level": "trace",
-    "file": "./logs/hroots-error.log"
+    "file": "./logs/hroots.log"
   },
   "replay": {
     "enabled": true,
@@ -111,20 +111,24 @@
       "alert": {"op": "<", "setpoint": -80.0, "title": "Low signal strength alert"}
     }],
     "srh": [{
-      "enabled": false,
-      "node": "plant",
+      "enabled": true,
+      "node": "plant.top",
       "value": "p",
-      "time": {"from": "18:50", "to": "19:05"},
-      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"},
-      "off": {"cmd": "-n relay -r water -s off"}
+      "time": {"from": "18:50", "to": "19:05", "days": {"sun", "tue", "thu"}},
+      "on":  {"op": "<=", "setpoint": 100.0, "cmd": "-n relay -r water -s on"}
     },{
       "enabled": true,
       "node": "plant.top",
       "value": "p",
-      "time": {"from": "18:50", "to": "19:05", "days": {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}},
-      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"},
-      "off": {"cmd": "-n relay -r water -s off"}
-    }],
+      "time": {"from": "18:50", "to": "19:05", "days": {"mon", "wed", "fri"}},
+      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"}
+    },{
+      "enabled": true,
+      "node": "plant.top",
+      "value": "p",
+      "time": {"from": "20:30", "to": "20:45", "days": {"sat"}},
+      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"}
+    }, "default": {"cmd": "-n relay -r water -s off"}],
     "lvl": [{
       "enabled": true,
       "node": "sump",
@@ -137,8 +141,8 @@
       "enabled": true,
       "node": "tank",
       "value": "cm",
-      "on":  {"op": ">", "setpoint": 27.0, "cmd": "-n valve  -v filter -s on"},
-      "off": {"op": "<=", "setpoint": 27.0, "cmd": "-n valve  -v filter -s off"},
+      "on":  {"op": ">", "setpoint": 27.0, "cmd": "-n valve -v filter -s on"},
+      "off": {"op": "<=", "setpoint": 27.0, "cmd": "-n valve -v filter -s off"},
       "alert": {"op": "<=", "setpoint": 24.0, "title": "High water level alert"}
     }],
     "clm": [{
