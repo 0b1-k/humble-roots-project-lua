@@ -105,7 +105,7 @@ local function onShellMsg(line)
   if line == "reset" then
     return nil
   end
-  local opts = shell.parse(line, "mnqrvs")
+  local opts = shell.parse(line)
   if opts.q ~= nil and opts.q == "report" then
     return report.report(cfg)
   end
@@ -116,18 +116,14 @@ local function onShellMsg(line)
       manualMode = false
     end
     log.info(string.format("Switched to '%s' mode", opts.m))
-  else  
-    if opts.n ~= nil and opts.s ~= nil and (opts.r ~= nil or opts.v ~= nil) then
-      opts.node = opts.n
-      opts.n = nil
-      opts.cmd = "act"
-      local resolvedCmd = rules.resolve(opts, cfg)
-      local encodedCmd = rules.encode(resolvedCmd)
-      log.info(string.format("Sending manual command: %s", encodedCmd))
-      gateway.send(encodedCmd)
-      return encodedCmd
+  else
+    local cmdFinal = rules.sendCommand(line, gateway, cfg)
+    if cmdFinal ~= nil then
+      log.info(string.format("Sent shell command: %s", cmdFinal))
     else
-      return "missing params!"
+      local err = string.format("Invalid shell command: %s", line)
+      log.error(err)
+      return err
     end
   end
   return "ok"
