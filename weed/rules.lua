@@ -1,7 +1,9 @@
 local md5 = require("md5")
 local sms = require("sms")
-local log = _ENV.log
+local utils = require("utils")
+local shell = require("shell")
 
+local log = _ENV.log
 local alerts = {}
 
 local function getAlertObj()
@@ -13,26 +15,12 @@ local function getAlertObj()
   return obj
 end
 
---https://stackoverflow.com/questions/1426954/split-string-in-lua
-local function splitString(input, sep)
-  if sep == nil then
-    sep = "%s"
-  end
-  local t = {}
-  local i = 1
-  for str in string.gmatch(input, "([^"..sep.."]+)") do
-    t[i] = str
-    i = i + 1
-  end
-  return t
-end
-
 local function decode(data)
-  local andTable = splitString(data, '&')
+  local andTable = utils.splitString(data, '&')
   local t = {}
   for i = 1, #andTable, 1 do
     local kvPair = andTable[i]
-    local values = splitString(kvPair, '=')
+    local values = utils.splitString(kvPair, '=')
     if #values == 2 then
       t[values[1]] = values[2]
     end
@@ -59,8 +47,8 @@ end
 
 local function evalCondition(value, condition)
   if condition.from ~= nil and condition.to ~= nil then
-    local from = splitString(condition.from, ':')
-    local to = splitString(condition.to, ':')
+    local from = utils.splitString(condition.from, ':')
+    local to = utils.splitString(condition.to, ':')
     local date = os.date("*t", os.time())
     local fromTime = os.date("*t", os.time())
     local toTime = os.date("*t", os.time())
@@ -121,6 +109,19 @@ local function encode(cmdTable)
   return string.format("%s&%s", table.concat(node, "&"), table.concat(other, "&"))
 end
 
+local function encodeShellToDevice(opts, cfg)
+  if opts.n ~= nil and opts.s ~= nil and (opts.r ~= nil or opts.v ~= nil) then
+    opts.node = opts.n
+    opts.n = nil
+    opts.cmd = "act"
+    local resolvedCmd = resolve(opts, cfg)
+    local encodedCmd = encode(resolvedCmd)
+    return encodedCmd
+  else
+    return nil
+  end
+end
+
 local function composeAlert(value, rule, nodeName, clear)
   local clearMark = "|CLEARED|"
   if clear == nil or not clear then
@@ -166,11 +167,36 @@ local function clearAlert(cfg, value, rule, nodeName)
   end
 end
 
+local function commandSink(cmdFinal, gateway, cfg)
+  if cmdFinal ~= nil then
+    if cfg.serial.enabled then
+      gateway.send(cmdFinal, nil)
+    else
+      log.info(string.format("Would send: %s", cmdFinal))
+    end
+    return cmdFinal
+  end
+  return nil
+end
+
 local function sendCommand(cmd, gateway, cfg)
-  local cmdDecoded = decode(cmd)
-  local cmdTable = resolve(cmdDecoded, cfg)
-  local cmdFinal = encode(cmdTable)
-  gateway.send(cmdFinal, nil)
+  local start, _ = string.find(cmd, "-n")
+  if start == 1 then
+    local opts = shell.parse(cmd)
+    local cmdFinal = encodeShellToDevice(opts, cfg)
+    if cmdFinal == nil then
+      log.fatal(string.format("Invalid cmd: %s", cmd))
+    else
+      log.trace(string.format("Cmd: %s", cmd))
+    end
+    return commandSink(cmdFinal, gateway, cfg)
+  else
+    local cmdDecoded = decode(cmd)
+    local cmdTable = resolve(cmdDecoded, cfg)
+    local cmdFinal = encode(cmdTable)
+    log.warn(string.format("Deprecated style: %s", cmd))
+    return commandSink(cmdFinal, gateway, cfg)
+  end
 end
 
 local function eval(rule, msg, gateway, cfg)
@@ -214,4 +240,5 @@ export.eval = eval
 export.decode = decode
 export.encode = encode
 export.resolve = resolve
+export.sendCommand = sendCommand
 return export
