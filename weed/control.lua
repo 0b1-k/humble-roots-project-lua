@@ -1,6 +1,3 @@
-local dbg = require("mobdebug")
-dbg.start()
-
 local log = require("log")
 _ENV.log = log
 
