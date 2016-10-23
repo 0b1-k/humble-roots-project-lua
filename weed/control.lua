@@ -199,7 +199,7 @@ while true do
     end
   else
     listening = true
-    while true do
+    while not gateway.isStopped() do
       onIdle()
       _ENV.io.Serial.del_us(10)
     end
