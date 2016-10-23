@@ -196,7 +196,6 @@ local function commandSink(cmdFinal, gateway, cfg)
   if cmdFinal ~= nil then
     if cfg.serial.enabled then
       gateway.send(cmdFinal, nil)
-      log.info(string.format("Cmd: %s", cmdFinal))
     else
       log.info(string.format("Would send: %s", cmdFinal))
     end
@@ -212,7 +211,9 @@ local function sendCommand(cmd, gateway, cfg)
     local cmdFinal = encodeShellToDevice(opts, cfg)
     if cmdFinal == nil then
       log.fatal(string.format("Invalid cmd: %s", cmd))
+      return nil
     end
+    log.info(string.format("Cmd: %s", cmd))
     return commandSink(cmdFinal, gateway, cfg)
   else
     local cmdDecoded = decode(cmd)
