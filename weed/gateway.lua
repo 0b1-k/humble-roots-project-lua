@@ -25,7 +25,7 @@ local function send(cmdFinal, retryObj)
   if retryObj == nil then
     retryQueue[cmdFinal] = getRetryObj()
   end
-  log.info(string.format("Sent: %s", cmdFinal))
+  log.trace(string.format("Sent: %s", cmdFinal))
   _ENV.io.Serial.del_us(1000 * 10)
 end
 
@@ -77,6 +77,10 @@ local function initialize(serialPort, baudRate)
   return sp
 end
 
+local function isStopped()
+  return stopEventLoop
+end
+
 local function stop()
   stopEventLoop = true
 end
@@ -112,4 +116,5 @@ export.run = run
 export.send = send
 export.retry = retry
 export.stop = stop
+export.isStopped = isStopped
 return export
