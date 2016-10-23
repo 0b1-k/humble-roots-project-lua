@@ -121,7 +121,7 @@
       "enabled": true,
       "node": "plant.top",
       "value": "p",
-      "time": {"from": "18:50", "to": "19:05"},
+      "time": {"from": "18:50", "to": "19:05", "days": {"mon", "tue", "wed", "thu", "fri", "sat", "sun"}},
       "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"},
       "off": {"cmd": "-n relay -r water -s off"}
     }],

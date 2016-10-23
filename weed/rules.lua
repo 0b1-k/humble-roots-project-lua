@@ -45,11 +45,36 @@ local function isTimeWithinRange(timeNow, fromTime, toTime)
   return false
 end
 
+local dayMap = {}
+dayMap[1] = "sun"
+dayMap[2] = "mon"
+dayMap[3] = "tue"
+dayMap[4] = "wed"
+dayMap[5] = "thu"
+dayMap[6] = "fri"
+dayMap[7] = "sat"
+
+local function isTodayWithinDays(date, days)  
+  local today = dayMap[date.wday]
+  for i in ipairs(days) do
+    local day = days[i]
+    if day == today then
+      return true
+    end
+  end
+  return false
+end
+
 local function evalCondition(value, condition)
+  local date = os.date("*t", os.time())
+  if condition.days ~= nil then
+    if not isTodayWithinDays(date, condition.days) then
+      return false
+    end
+  end
   if condition.from ~= nil and condition.to ~= nil then
     local from = utils.splitString(condition.from, ':')
     local to = utils.splitString(condition.to, ':')
-    local date = os.date("*t", os.time())
     local fromTime = os.date("*t", os.time())
     local toTime = os.date("*t", os.time())
     fromTime.hour = tonumber(from[1])
@@ -187,7 +212,7 @@ local function sendCommand(cmd, gateway, cfg)
     if cmdFinal == nil then
       log.fatal(string.format("Invalid cmd: %s", cmd))
     else
-      log.trace(string.format("Cmd: %s", cmd))
+      log.info(string.format("Cmd: %s", cmd))
     end
     return commandSink(cmdFinal, gateway, cfg)
   else
