@@ -1,6 +1,7 @@
 {
   "log": {
-    "level": "trace"
+    "level": "trace",
+    "file": "./logs/hroots-error.log"
   },
   "replay": {
     "enabled": true,
@@ -20,13 +21,13 @@
   },
   "sms": {
     "enabled": false,
-    "accept": "15551112222",
-    "dest": "15551112222",
+    "accept": "19995551212",
+    "dest": "19995551212",
     "outgoing": "/var/spool/sms/outgoing",
     "incoming": "/var/spool/sms/incoming"
   },
   "shell": {
-    "enabled": false,
+    "enabled": true,
     "bind": "localhost",
     "port": 42024
   },
@@ -110,79 +111,79 @@
       "alert": {"op": "<", "setpoint": -80.0, "title": "Low signal strength alert"}
     }],
     "srh": [{
-      "enabled": true,
+      "enabled": false,
       "node": "plant",
       "value": "p",
       "time": {"from": "18:50", "to": "19:05"},
-      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "node=relay&cmd=act&r=water&s=on"},
-      "off": {"cmd": "node=relay&cmd=act&r=water&s=off"}
+      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"},
+      "off": {"cmd": "-n relay -r water -s off"}
     },{
       "enabled": true,
       "node": "plant.top",
       "value": "p",
       "time": {"from": "18:50", "to": "19:05"},
-      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "node=relay&cmd=act&r=water&s=on"},
-      "off": {"cmd": "node=relay&cmd=act&r=water&s=off"}
+      "on":  {"op": "<=", "setpoint": 95.0, "cmd": "-n relay -r water -s on"},
+      "off": {"cmd": "-n relay -r water -s off"}
     }],
     "lvl": [{
-      "enabled": false,
+      "enabled": true,
       "node": "sump",
       "value": "cm",
-      "on":  {"op": "<=", "setpoint": 23.1, "cmd": "node=relay&cmd=act&r=drain&s=on"},
-      "off": {"op": ">=", "setpoint": 26.5, "cmd": "node=relay&cmd=act&r=drain&s=off"},
+      "on":  {"op": "<=", "setpoint": 23.1, "cmd": "-n relay -r drain -s on"},
+      "off": {"op": ">=", "setpoint": 26.5, "cmd": "-n relay -r drain -s off"},
       "alert": {"op": "<=", "setpoint": 21.0, "title": "High water level alert"}
     },
     {
-      "enabled": false,
+      "enabled": true,
       "node": "tank",
       "value": "cm",
-      "on":  {"op": ">", "setpoint": 27.0, "cmd": "node=valve&cmd=act&v=filter&s=on"},
-      "off": {"op": "<=", "setpoint": 27.0, "cmd": "node=valve&cmd=act&v=filter&s=off"},
+      "on":  {"op": ">", "setpoint": 27.0, "cmd": "-n valve  -v filter -s on"},
+      "off": {"op": "<=", "setpoint": 27.0, "cmd": "-n valve  -v filter -s off"},
       "alert": {"op": "<=", "setpoint": 24.0, "title": "High water level alert"}
     }],
     "clm": [{
-      "enabled": false,
+      "enabled": true,
       "node": "climate",
       "value": "tmp",
-      "on":  {"op": ">",  "setpoint": 27.5, "cmd": "node=relay&cmd=act&r=vent&s=on"},
-      "off": {"cmd": "node=relay&cmd=act&r=vent&s=off"},
-      "alert": {"op": ">=", "setpoint": 28.0, "title": "High temperature alert"}
+      "on":  {"op": ">",  "setpoint": 23.5, "cmd": "-n relay -r vent -s on"},
+      "off": {"cmd": "-n relay -r vent -s off"},
+      "alert": {"op": ">=", "setpoint": 26.0, "title": "High temperature alert"}
     },
     {
-      "enabled": false,
+      "enabled": true,
       "node": "climate",
       "value": "rh",
-      "on":  {"op": ">",  "setpoint": 55.0, "cmd": "node=relay&cmd=act&r=dh&s=on"},
-      "off": {"cmd": "node=relay&cmd=act&r=dh&s=off"},
+      "on":  {"op": ">",  "setpoint": 55.0, "cmd": "-n relay -r dh -s on"},
+      "off": {"cmd": "-n relay -r dh -s off"},
       "alert": {"op": ">=", "setpoint": 65.0, "title": "High humidity alert"}
     }],
     "rly": [{
-      "enabled": false,
+      "enabled": true,
       "node": "relay",
       "value": "r",
       "state": "s"
     }],
     "vlv": [{
-      "enabled": false,
+      "enabled": true,
       "node": "valve",
       "value": "v",
       "state": "s"
     }],
     "timers": [{
-      "enabled": false,
+      "enabled": true,
       "task": "light",
       "value": "ts",
-      "time": {"from": "00:00", "to": "23:59"},
-      "on":  {"cmd": "node=relay&cmd=act&r=light&s=on"},
-      "off": {"cmd": "node=relay&cmd=act&r=light&s=off"}
+      "time": {"from": "18:00", "to": "12:00"},
+      "on":  {"cmd": "-n relay -r light -s on"},
+      "off": {"cmd": "-n relay -r light -s off"}
     },
     {
-      "enabled": false,
+      "enabled": true,
       "task": "air",
       "value": "ts",
       "time": {"from": "00:00", "to": "23:59"},
-      "on":  {"cmd": "node=relay&cmd=act&r=air&s=on"},
-      "off": {"cmd": "node=relay&cmd=act&r=air&s=off"}
+      "on":  {"cmd": "-n relay -r air -s on"},
+      "off": {"cmd": "-n relay -r air -s off"}
     }]
   },
   "report": {
