@@ -1,3 +1,6 @@
+local dbg = require("mobdebug")
+dbg.start()
+
 local log = require("log")
 _ENV.log = log
 
@@ -60,11 +63,18 @@ local function onData(data)
     -- sensor data was received...
     log.info(string.format("Sensor: %s", data))
     heartbeat.pulse(msgResolved.node)
-    local devRules = cfg.control[msg.t] 
+    local devRules = cfg.control[msg.t]
     if devRules ~= nil then
+      local commandSent = false
+      local defaultCommand = devRules["default"]
       for _, rule in pairs(devRules) do
         if not manualMode then
-          rules.eval(rule, msg, gateway, cfg)
+          if defaultCommand ~= nil then
+            rule.defaultCmd = defaultCommand.cmd
+          end
+          if rules.eval(rule, msg, gateway, cfg) then
+            commandSent = true
+          end
         end
         
         local value = tonumber(msg[rule.value])
@@ -80,6 +90,10 @@ local function onData(data)
             report.update(nodeName, rule.value, value)
           end
         end    
+      end
+      if not commandSent and defaultCommand ~= nil then
+        log.info(string.format("Default Cmd: %s", defaultCommand.cmd))
+        rules.sendCommand(defaultCommand.cmd, gateway, cfg)
       end
     end
     if cfg.control.signal ~= nil then

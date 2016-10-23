@@ -196,6 +196,7 @@ local function commandSink(cmdFinal, gateway, cfg)
   if cmdFinal ~= nil then
     if cfg.serial.enabled then
       gateway.send(cmdFinal, nil)
+      log.info(string.format("Cmd: %s", cmdFinal))
     else
       log.info(string.format("Would send: %s", cmdFinal))
     end
@@ -211,35 +212,33 @@ local function sendCommand(cmd, gateway, cfg)
     local cmdFinal = encodeShellToDevice(opts, cfg)
     if cmdFinal == nil then
       log.fatal(string.format("Invalid cmd: %s", cmd))
-    else
-      log.info(string.format("Cmd: %s", cmd))
     end
     return commandSink(cmdFinal, gateway, cfg)
   else
     local cmdDecoded = decode(cmd)
     local cmdTable = resolve(cmdDecoded, cfg)
     local cmdFinal = encode(cmdTable)
-    log.warn(string.format("Deprecated style: %s", cmd))
+    log.warn(string.format("Deprecated command style: %s", cmd))
     return commandSink(cmdFinal, gateway, cfg)
   end
 end
 
 local function eval(rule, msg, gateway, cfg)
   if not rule.enabled then
-    return
-  end
-  
-  local value = tonumber(msg[rule.value])
-  if value == nil then
-    return
+    return false
   end
   
   local nodeName = cfg.node[msg.node]
   
   if nodeName ~= rule.node then
-    return
+    return false
   end
 
+  local value = tonumber(msg[rule.value])
+  if value == nil then
+    return false
+  end
+  
   if rule.alert ~= nil and rule.node ~= nil and msg.node ~= nil and nodeName == rule.node then
     if evalCondition(value, rule.alert, msg) then
       sendAlert(cfg, value, rule, nodeName)
@@ -248,16 +247,24 @@ local function eval(rule, msg, gateway, cfg)
     end
   end
 
-  if rule.time ~= nil and rule.off ~= nil and not evalCondition(value, rule.time, msg) then
-    sendCommand(rule.off.cmd, gateway, cfg)
-    return
+  if rule.time ~= nil then
+    if rule.off ~= nil and rule.defaultCmd == nil and not evalCondition(value, rule.time, msg) then
+      sendCommand(rule.off.cmd, gateway, cfg)
+      return true
+    elseif not evalCondition(value, rule.time, msg) then
+      return false
+    end
   end
   
   if rule.on ~= nil and evalCondition(value, rule.on, msg) then
     sendCommand(rule.on.cmd, gateway, cfg)
-  elseif rule.off ~= nil and evalCondition(value, rule.off, msg) == true then
+    return true
+  elseif rule.off ~= nil and rule.defaultCmd == nil and evalCondition(value, rule.off, msg) then
     sendCommand(rule.off.cmd, gateway, cfg)
+    return true
   end
+  
+  return false
 end
 
 local export = {}
