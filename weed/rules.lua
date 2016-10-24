@@ -265,7 +265,10 @@ local function eval(rule, msg, gateway, cfg)
   local nodeName = cfg.node[msg.node]
   
   if nodeName ~= rule.node then
-    return false
+    -- BUG: need to handle mix of rules from != nodes of same type
+    -- avoid sending a default command in this case
+    log.trace(string.format("Skipping rule: %s != %s. Not sending default cmd.", nodeName, rule.node))
+    return true
   end
 
   local value = tonumber(msg[rule.value])
