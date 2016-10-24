@@ -62,6 +62,7 @@ local function onData(data)
     heartbeat.pulse(msgResolved.node)
     local devRules = cfg.control[msg.t]
     if devRules ~= nil then
+      log.trace(string.format("Rule type: %s", msg.t))
       local commandSent = false
       local defaultCommand = devRules["default"]
       for _, rule in pairs(devRules) do
@@ -89,11 +90,12 @@ local function onData(data)
         end    
       end
       if not commandSent and defaultCommand ~= nil then
-        log.info(string.format("Default Cmd: %s", defaultCommand.cmd))
+        log.trace(string.format("Default Cmd: %s", defaultCommand.cmd))
         rules.sendCommand(defaultCommand.cmd, gateway, cfg)
       end
     end
     if cfg.control.signal ~= nil then
+      log.trace("Rule type: signal")
       for _, rule in pairs(cfg.control.signal) do
         if not manualMode then
           rules.eval(rule, msg, gateway, cfg)
@@ -165,7 +167,7 @@ local function onIdle()
     listen.receive(onShellMsg)
   end
   if os.time() >= nextTime then
-    log.trace(string.format("Tick: %s", tostring(cfg.control.tick.freqSec)))
+    log.info(string.format("Tick: %s", tostring(cfg.control.tick.freqSec)))
     if listening and cfg.control.timers ~= nil then
       if not manualMode then
         heartbeat.elapseTime(cfg.control.tick.freqSec)
