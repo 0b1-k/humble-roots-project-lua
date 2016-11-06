@@ -45,7 +45,7 @@
     "tank": "30",
     "climate": "40",
     "valve": "50",
-    "plant.top", "60"
+    "plant.top": "60"
   },
   "r":	{
     "0": "dh",
