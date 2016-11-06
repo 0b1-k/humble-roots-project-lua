@@ -32,7 +32,7 @@ local function getConfig(path)
   json = nil
   collectgarbage()
   if err then
-    error("Error:", err)
+    error(string.format("Invalid JSON: %s", err))
     os.exit()
   end
   return cfg
