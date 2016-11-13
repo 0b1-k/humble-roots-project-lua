@@ -219,7 +219,7 @@ local function clearAlert(cfg, value, rule, nodeName)
     alerts[hash] = nil
     local alertMsg = composeAlert(value, rule, nodeName, true)
     sms.send(cfg, alertMsg)
-    log.info(alertMsg)
+    log.warn(alertMsg)
   end
 end
 
