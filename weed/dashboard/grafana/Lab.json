@@ -294,7 +294,7 @@
             {
               "format": "short",
               "label": null,
-              "logBase": 1,
+              "logBase": 2,
               "max": null,
               "min": null,
               "show": true
@@ -649,9 +649,9 @@
             "max": true,
             "min": true,
             "show": true,
+            "sortDesc": true,
             "total": false,
-            "values": true,
-            "sortDesc": true
+            "values": true
           },
           "lines": true,
           "linewidth": 1,
@@ -672,47 +672,47 @@
           "steppedLine": false,
           "targets": [
             {
-              "policy": "default",
+              "alias": "Plant Top RH (%)",
               "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "$interval"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "null"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "p",
+              "policy": "default",
+              "refId": "C",
               "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "mean"
+                  }
+                ]
+              ],
               "tags": [
                 {
                   "key": "node",
                   "operator": "=",
                   "value": "plant.top"
                 }
-              ],
-              "groupBy": [
-                {
-                  "type": "time",
-                  "params": [
-                    "$interval"
-                  ]
-                },
-                {
-                  "type": "fill",
-                  "params": [
-                    "null"
-                  ]
-                }
-              ],
-              "select": [
-                [
-                  {
-                    "type": "field",
-                    "params": [
-                      "value"
-                    ]
-                  },
-                  {
-                    "type": "mean",
-                    "params": []
-                  }
-                ]
-              ],
-              "refId": "C",
-              "measurement": "p",
-              "alias": "Plant Top RH (%)"
+              ]
             },
             {
               "alias": "Plant Roots RH (%)",
@@ -1054,6 +1054,8 @@
             "max": true,
             "min": true,
             "show": true,
+            "sort": null,
+            "sortDesc": null,
             "total": false,
             "values": true
           },
@@ -1412,11 +1414,173 @@
         }
       ],
       "title": "New row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": "250px",
+      "panels": [
+        {
+          "columns": [],
+          "editable": true,
+          "error": false,
+          "fontSize": "100%",
+          "id": 8,
+          "isNew": true,
+          "links": [],
+          "pageSize": null,
+          "scroll": true,
+          "showHeader": true,
+          "sort": {
+            "col": 0,
+            "desc": true
+          },
+          "span": 6,
+          "styles": [
+            {
+              "dateFormat": "YYYY-MM-DD HH:mm:ss",
+              "pattern": "Time",
+              "type": "date"
+            },
+            {
+              "colorMode": null,
+              "colors": [
+                "rgba(245, 54, 54, 0.9)",
+                "rgba(237, 129, 40, 0.89)",
+                "rgba(50, 172, 45, 0.97)"
+              ],
+              "decimals": 2,
+              "pattern": "/.*/",
+              "thresholds": [],
+              "type": "string",
+              "unit": "short"
+            }
+          ],
+          "targets": [
+            {
+              "dsType": "influxdb",
+              "groupBy": [],
+              "policy": "default",
+              "refId": "A",
+              "resultFormat": "table",
+              "select": [
+                [
+                  {
+                    "type": "field",
+                    "params": [
+                      "level"
+                    ]
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "params": [
+                      "text"
+                    ]
+                  }
+                ]
+              ],
+              "tags": [],
+              "measurement": "event",
+              "hide": false,
+              "alias": ""
+            }
+          ],
+          "title": "Log",
+          "transform": "table",
+          "type": "table",
+          "datasource": "events",
+          "transparent": true,
+          "minSpan": 6,
+          "height": "200"
+        },
+        {
+          "title": "Alerts",
+          "error": false,
+          "span": 6,
+          "editable": true,
+          "type": "table",
+          "isNew": true,
+          "id": 9,
+          "targets": [
+            {
+              "policy": "default",
+              "dsType": "influxdb",
+              "resultFormat": "table",
+              "tags": [
+                {
+                  "key": "tag",
+                  "operator": "=",
+                  "value": "./rules.lua"
+                }
+              ],
+              "groupBy": [],
+              "select": [
+                [
+                  {
+                    "type": "field",
+                    "params": [
+                      "level"
+                    ]
+                  }
+                ],
+                [
+                  {
+                    "type": "field",
+                    "params": [
+                      "text"
+                    ]
+                  }
+                ]
+              ],
+              "refId": "A",
+              "measurement": "event"
+            }
+          ],
+          "styles": [
+            {
+              "type": "date",
+              "pattern": "Time",
+              "dateFormat": "YYYY-MM-DD HH:mm:ss"
+            },
+            {
+              "unit": "short",
+              "type": "number",
+              "decimals": 2,
+              "colors": [
+                "rgba(245, 54, 54, 0.9)",
+                "rgba(237, 129, 40, 0.89)",
+                "rgba(50, 172, 45, 0.97)"
+              ],
+              "colorMode": null,
+              "pattern": "/.*/",
+              "thresholds": []
+            }
+          ],
+          "transform": "table",
+          "pageSize": null,
+          "showHeader": true,
+          "columns": [],
+          "scroll": true,
+          "fontSize": "100%",
+          "sort": {
+            "col": 0,
+            "desc": true
+          },
+          "datasource": "events",
+          "links": [],
+          "transparent": true,
+          "minSpan": 6,
+          "height": "200"
+        }
+      ],
+      "title": "New row"
     }
   ],
   "time": {
-    "from": "2016-10-17T01:03:34.728Z",
-    "to": "2016-10-17T04:57:29.371Z"
+    "from": "now/d",
+    "to": "now"
   },
   "timepicker": {
     "refresh_intervals": [
@@ -1449,8 +1613,8 @@
   "annotations": {
     "list": []
   },
-  "refresh": false,
+  "refresh": "10s",
   "schemaVersion": 12,
-  "version": 50,
+  "version": 63,
   "links": []
 }
