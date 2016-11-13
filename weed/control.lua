@@ -19,6 +19,11 @@ local manualMode = false
 local cfgFilePath = "./config/config.json"
 local cfg = config.getConfig(cfgFilePath)
 
+local function writeEventToDB(level, msg, info)
+  db.pushEvent("event", level, info.short_src, msg)
+  db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
+end
+
 local function writeMsgToDB(msgResolved, valueId)
   if cfg.influxDB.enabled then
     if cfg.fixup[valueId] ~= nil then
@@ -198,6 +203,7 @@ while true do
   if cfg.log.file ~= nil then
     _ENV.log.outfile = cfg.log.file
   end
+  log.callback = writeEventToDB
   log.info("Gateway started")
   heartbeat.initialize(cfg)
   listen.initialize(cfg.shell.bind, cfg.shell.port)

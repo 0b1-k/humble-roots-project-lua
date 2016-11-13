@@ -30,11 +30,16 @@ local function pushSingleValue(measurement, tag, value)
   table.insert(body, line)
 end
 
+local function pushEvent(measurement, level, tag, text)
+  local line = string.format("%s,level=%s,tag=%s level=\"%s\",text=\"%s\"\n", measurement, level, tag, level, tostring(text))
+  table.insert(body, line)
+end
+
 local function post(address, port, db)
     local reqbody = table.concat(body, "\n")
     body = {}
     local respbody = {}
-    local result, respcode, respheaders, respstatus = http.request {
+    local result, respcode, _, respstatus = http.request {
         method = "POST",
         url = getServerUrl(address, port, db),
         source = ltn12.source.string(reqbody),
@@ -44,8 +49,12 @@ local function post(address, port, db)
         },
         sink = ltn12.sink.table(respbody)
     }
-    if result == nil then
-      log.error(respcode)
+    if result ~= nil and result == 1 then
+      if respcode ~= 200 and respcode ~= 204 then
+        print(string.format("InfluxDB response %s", respstatus))
+      end
+    else
+      print("InfluxDB write failure!")
     end
     return respbody
 end
@@ -53,5 +62,6 @@ end
 local export = {}
 export.push = push
 export.pushSingleValue = pushSingleValue
+export.pushEvent = pushEvent
 export.post = post
 return export

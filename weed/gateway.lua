@@ -45,9 +45,9 @@ local function retry(msg)
     retryObj.retries = retryObj.retries - 1
     if retryObj.retries > 0 then
       send(cmdFinal, retryObj)
-      log.warn(string.format("Retry: %s (#%s)", cmdFinal, tostring(retryObj.retries)))
+      log.debug(string.format("Retry: %s (#%s)", cmdFinal, tostring(retryObj.retries)))
     else
-      log.error(string.format("Retries exceeded: %s", cmdFinal))
+      log.warn(string.format("Retries exceeded: %s", cmdFinal))
       retryQueue[cmdFinal] = nil
     end
   else

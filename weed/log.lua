@@ -12,7 +12,7 @@ local log = { _version = "0.1.0" }
 log.usecolor = true
 log.outfile = nil
 log.level = "trace"
-
+log.callback = nil
 
 local modes = {
   { name = "trace", color = "\27[34m", },
@@ -65,20 +65,25 @@ for i, x in ipairs(modes) do
     local info = debug.getinfo(2, "Sl")
     local lineinfo = info.short_src .. ":" .. info.currentline
 
+    -- Callback
+    if log.callback ~= nil then
+      log.callback(nameupper, msg, info)
+    end
+    
     -- Output to console
-    print(string.format("%s[%-6s%s]%s %s: %s",
-                        log.usecolor and x.color or "",
-                        nameupper,
-                        os.date("%H:%M:%S"),
-                        log.usecolor and x.color or "", --log.usecolor and "\27[0m" or "",
-                        lineinfo,
-                        msg))
+    print(string.format(
+        "%s[%-6s%s]%s %s: %s",
+        log.usecolor and x.color or "",
+        nameupper,
+        os.date("%H:%M:%S"),
+        log.usecolor and x.color or "",
+        lineinfo,
+        msg))
 
     -- Output to log file
     if log.outfile ~= nil then
       local fp = io.open(log.outfile, "a")
-      local str = string.format("[%-6s%s] %s: %s\n",
-                                nameupper, os.date(), lineinfo, msg)
+      local str = string.format("[%-6s%s] %s: %s\n", nameupper, os.date(), lineinfo, msg)
       fp:write(str)
       fp:close()
     end
