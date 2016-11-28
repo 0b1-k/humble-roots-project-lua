@@ -20,8 +20,10 @@ local cfgFilePath = "./config/config.json"
 local cfg = config.getConfig(cfgFilePath)
 
 local function writeEventToDB(level, msg, info)
-  db.pushEvent("event", level, info.short_src, msg)
-  db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
+  if cfg.influxDB.enabled then
+    db.pushEvent("event", level, info.short_src, msg)
+    db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
+  end
 end
 
 local function writeMsgToDB(msgResolved, valueId)
@@ -61,53 +63,65 @@ local function onData(data)
   end
   local msg = rules.decode(data)
   local msgResolved = rules.resolve(msg, cfg)
-  if msg.node ~= nil and msg.tx == nil and msg.t ~= nil then
+  if msg.node ~= nil and msg.tx == nil and msg.t ~= nil and msgResolved.node ~= nil then
+    
     -- sensor data was received...
     log.info(string.format("Sensor: %s", data))
     heartbeat.pulse(msgResolved.node)
-    local devRules = cfg.control[msg.t]
-    if devRules ~= nil then
-      log.trace(string.format("Rule type: %s", msg.t))
-      local commandSent = false
-      local defaultCommand = devRules["default"]
-      for _, rule in pairs(devRules) do
-        if not manualMode then
-          if defaultCommand ~= nil then
-            rule.defaultCmd = defaultCommand.cmd
+    local nodeRules = cfg.control[msgResolved.node]
+    if nodeRules ~= nil then
+      local devRules = nodeRules[msg.t]
+      if devRules ~= nil then     
+        log.trace(string.format("Rule type: %s.%s", msgResolved.node, msgResolved.t))
+        for _, ruleHighLevel in pairs(devRules) do
+          
+          local defaultCommand = nil
+          local commandSent = false
+          
+          for _, rule in pairs(ruleHighLevel.rules) do
+            rule.value = ruleHighLevel.value
+            rule.node = msgResolved.node
+            defaultCommand = ruleHighLevel.rules.default
+            if defaultCommand ~= nil then
+              rule.defaultCmd = defaultCommand.cmd
+            end
+            if not manualMode and rules.eval(rule, msg, gateway, cfg) then
+              commandSent = true
+            end
           end
-          if rules.eval(rule, msg, gateway, cfg) then
-            commandSent = true
+          
+          if not manualMode and not commandSent and defaultCommand ~= nil then
+            log.trace(string.format("Default Cmd: %s", defaultCommand.cmd))
+            rules.sendCommand(defaultCommand.cmd, gateway, cfg)
           end
+          
+          local value = tonumber(msg[ruleHighLevel.value])
+          
+          if value ~= nil then
+            if ruleHighLevel.state ~= nil then
+              writeMsgToDB(msgResolved, ruleHighLevel.state)
+              report.update(msgResolved.node, ruleHighLevel.value, msgResolved[ruleHighLevel.value], ruleHighLevel.state, msgResolved[ruleHighLevel.state])
+            else
+              writeMsgToDB(msgResolved, ruleHighLevel.value)
+              report.update(msgResolved.node, ruleHighLevel.value, value)
+            end
+          end  
+          
         end
-        
-        local value = tonumber(msg[rule.value])
-        local _ = tonumber(msg[rule.state])
-        local nodeName = cfg.node[msg.node]
-        
-        if nodeName ~= nil and value ~= nil then
-          if rule.state ~= nil then
-            writeMsgToDB(msgResolved, rule.state)
-            report.update(nodeName, rule.value, msgResolved[rule.value], rule.state, msgResolved[rule.state])
-          else
-            writeMsgToDB(msgResolved, rule.value)
-            report.update(nodeName, rule.value, value)
-          end
-        end    
-      end
-      if not commandSent and defaultCommand ~= nil then
-        log.trace(string.format("Default Cmd: %s", defaultCommand.cmd))
-        rules.sendCommand(defaultCommand.cmd, gateway, cfg)
       end
     end
+    
     if cfg.control.signal ~= nil then
       log.trace("Rule type: signal")
       for _, rule in pairs(cfg.control.signal) do
+        rule.node = msgResolved.node
         if not manualMode then
           rules.eval(rule, msg, gateway, cfg)
         end
         writeMsgToDB(msgResolved, rule.value)
       end
     end
+
   elseif msg.node ~= nil and msg.tx ~= nil and msg.t == nil then
     -- a command ack/nak was received...
     gateway.retry(msg)

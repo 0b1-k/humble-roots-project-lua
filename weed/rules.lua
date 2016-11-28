@@ -3,9 +3,6 @@ local sms = require("sms")
 local utils = require("utils")
 local shell = require("shell")
 
-local dbg = require("mobdebug")
-dbg.start()
-
 local log = _ENV.log
 local alerts = {}
 local trace = {}
@@ -261,28 +258,19 @@ local function eval(rule, msg, gateway, cfg)
   end
   
   _traceReset()
-  
-  local nodeName = cfg.node[msg.node]
-  
-  if nodeName ~= rule.node then
-    -- BUG: need to handle mix of rules from != nodes of same type
-    -- avoid sending a default command in this case
-    log.trace(string.format("Skipping rule: %s != %s. Not sending default cmd.", nodeName, rule.node))
-    return true
-  end
 
   local value = tonumber(msg[rule.value])
   if value == nil then
     return false
   end
   
-  _trace(string.format("%s.%s = %s", nodeName or "_", rule.value, tostring(value)))
+  _trace(string.format("%s.%s = %s", rule.node or "_", rule.value, tostring(value)))
   
-  if rule.alert ~= nil and rule.node ~= nil and msg.node ~= nil and nodeName == rule.node then
+  if rule.alert ~= nil then
     if evalCondition(value, rule.alert, msg) then
-      sendAlert(cfg, value, rule, nodeName)
+      sendAlert(cfg, value, rule, rule.node)
     else
-      clearAlert(cfg, value, rule, nodeName)
+      clearAlert(cfg, value, rule, rule.node)
     end
   end
 

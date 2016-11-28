@@ -47,7 +47,7 @@ local function retry(msg)
       send(cmdFinal, retryObj)
       log.debug(string.format("Retry: %s (#%s)", cmdFinal, tostring(retryObj.retries)))
     else
-      log.warn(string.format("Retries exceeded: %s", cmdFinal))
+      log.info(string.format("Retries exceeded: %s", cmdFinal))
       retryQueue[cmdFinal] = nil
     end
   else
