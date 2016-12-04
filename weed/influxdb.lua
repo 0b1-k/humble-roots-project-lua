@@ -1,6 +1,5 @@
 local http = require("socket.http")
 local ltn12 = require("ltn12")
-local log = _ENV.log
 
 local function getServerUrl(address, port, db)
     return string.format("http://%s:%s/write?db=%s", address, tostring(port), db)
