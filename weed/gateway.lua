@@ -65,7 +65,6 @@ end
 local function initialize(serialPort, baudRate)
   stopEventLoop = false
   retryQueue = {}
-  shutdown()
   local sp = io.Serial{
     port = serialPort,
     baud = baudRate,
@@ -83,6 +82,11 @@ end
 
 local function stop()
   stopEventLoop = true
+  shutdown()
+end
+
+local function resetStopEvent()
+  stopEventLoop = false
 end
 
 local function run(serialPort, baudrate, onData, onIdle)
@@ -117,4 +121,5 @@ export.send = send
 export.retry = retry
 export.stop = stop
 export.isStopped = isStopped
+export.resetStopEvent = resetStopEvent
 return export
