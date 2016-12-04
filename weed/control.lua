@@ -66,7 +66,7 @@ local function onData(data)
   if msg.node ~= nil and msg.tx == nil and msg.t ~= nil and msgResolved.node ~= nil then
     
     -- sensor data was received...
-    log.info(string.format("Sensor: %s", data))
+    log.info(string.format("Packet: %s", data))
     heartbeat.pulse(msgResolved.node)
     local nodeRules = cfg.control[msgResolved.node]
     if nodeRules ~= nil then
@@ -191,9 +191,27 @@ local function onIdle()
       if not manualMode then
         heartbeat.elapseTime(cfg.control.tick.freqSec)
       end
-      for _, rule in pairs(cfg.control.timers) do
-        if not manualMode then
-          rules.eval(rule, {ts=os.time()}, gateway, cfg)
+      for timerName, timer in pairs(cfg.control.timers) do
+        log.info(string.format("Timer: %s", timerName))
+        for _, timerRuleArray in pairs(timer) do
+          local defaultCommand = nil
+          local commandSent = false
+          for ruleIdx, rule in pairs(timerRuleArray.rules) do
+            if type(ruleIdx) == 'number' then
+              rule.value = timerRuleArray.value
+              defaultCommand = timerRuleArray.rules.default
+              if defaultCommand ~= nil then
+                rule.defaultCmd = defaultCommand.cmd
+              end
+              if not manualMode and rules.eval(rule, {ts=os.time()}, gateway, cfg) then
+                commandSent = true
+              end
+            end
+          end
+          if not manualMode and not commandSent and defaultCommand ~= nil then
+            log.trace(string.format("Default Cmd: %s", defaultCommand.cmd))
+            rules.sendCommand(defaultCommand.cmd, gateway, cfg)
+          end
         end
       end
     end
@@ -232,6 +250,7 @@ while true do
     end
   else
     listening = true
+    gateway.resetStopEvent()
     while not gateway.isStopped() do
       onIdle()
       _ENV.io.Serial.del_us(10)
