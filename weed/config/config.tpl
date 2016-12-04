@@ -1,7 +1,7 @@
 {
   "log": {"level": "trace"},
   "replay": {
-    "enabled": false,
+    "enabled": true,
     "record": false,
     "recordDuration": 3600
   },
@@ -114,10 +114,10 @@
     "signal": [{
       "enabled": true,
       "value": "rssi",
-      "alert": {"op": "<", "setpoint": -80.0, "title": "Low signal strength alert"}
+      "alert": {"op": "<", "setpoint": -50.0, "title": "Low signal strength alert"}
     }],
 
-    "plantTop": {
+    "plant.top": {
       "srh": [{
           "value": "p",
           "rules": [{
@@ -204,7 +204,7 @@
             "on":  {"cmd": "-n relay -r light -s on"}
             }, "default": {"cmd": "-n relay -r light -s off"}
           ]
-      }],{
+      }],
       "air": [{
           "value": "ts",
           "rules": [{
@@ -213,8 +213,7 @@
             "on":  {"cmd": "-n relay -r air -s on"}
             }, "default": {"cmd": "-n relay -r air -s off"}
           ]
-        }]
-      }
+      }]
     },
   }
 }
