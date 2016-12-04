@@ -5,6 +5,6 @@ local function get(filename)
   return logo
 end
 
-export = {}
+local export = {}
 export.get = get
 return export
