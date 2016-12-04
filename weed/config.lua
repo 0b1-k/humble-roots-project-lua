@@ -1,5 +1,4 @@
 local lfs = require("lfs")
-local log = require("log")
 
 local function getFileChangeInfoObj(path)
   local attr = lfs.attributes(path)
