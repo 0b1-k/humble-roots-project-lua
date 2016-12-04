@@ -1422,12 +1422,15 @@
       "panels": [
         {
           "columns": [],
+          "datasource": "events",
           "editable": true,
           "error": false,
           "fontSize": "100%",
+          "height": "200",
           "id": 8,
           "isNew": true,
           "links": [],
+          "minSpan": 6,
           "pageSize": null,
           "scroll": true,
           "showHeader": true,
@@ -1458,121 +1461,124 @@
           ],
           "targets": [
             {
+              "alias": "",
               "dsType": "influxdb",
               "groupBy": [],
+              "hide": false,
+              "measurement": "event",
               "policy": "default",
               "refId": "A",
               "resultFormat": "table",
               "select": [
                 [
                   {
-                    "type": "field",
                     "params": [
                       "level"
-                    ]
+                    ],
+                    "type": "field"
                   }
                 ],
                 [
                   {
-                    "type": "field",
                     "params": [
                       "text"
-                    ]
+                    ],
+                    "type": "field"
                   }
                 ]
               ],
-              "tags": [],
-              "measurement": "event",
-              "hide": false,
-              "alias": ""
+              "tags": []
             }
           ],
           "title": "Log",
           "transform": "table",
-          "type": "table",
-          "datasource": "events",
           "transparent": true,
-          "minSpan": 6,
-          "height": "200"
+          "type": "table"
         },
         {
-          "title": "Alerts",
-          "error": false,
-          "span": 6,
+          "columns": [],
+          "datasource": "events",
           "editable": true,
-          "type": "table",
-          "isNew": true,
+          "error": false,
+          "fontSize": "100%",
+          "height": "200",
           "id": 9,
-          "targets": [
-            {
-              "policy": "default",
-              "dsType": "influxdb",
-              "resultFormat": "table",
-              "tags": [
-                {
-                  "key": "tag",
-                  "operator": "=",
-                  "value": "./rules.lua"
-                }
-              ],
-              "groupBy": [],
-              "select": [
-                [
-                  {
-                    "type": "field",
-                    "params": [
-                      "level"
-                    ]
-                  }
-                ],
-                [
-                  {
-                    "type": "field",
-                    "params": [
-                      "text"
-                    ]
-                  }
-                ]
-              ],
-              "refId": "A",
-              "measurement": "event"
-            }
-          ],
+          "isNew": true,
+          "links": [],
+          "minSpan": 6,
+          "pageSize": null,
+          "scroll": true,
+          "showHeader": true,
+          "sort": {
+            "col": 0,
+            "desc": true
+          },
+          "span": 6,
           "styles": [
             {
-              "type": "date",
+              "dateFormat": "YYYY-MM-DD HH:mm:ss",
               "pattern": "Time",
-              "dateFormat": "YYYY-MM-DD HH:mm:ss"
+              "type": "date"
             },
             {
-              "unit": "short",
-              "type": "number",
-              "decimals": 2,
+              "colorMode": null,
               "colors": [
                 "rgba(245, 54, 54, 0.9)",
                 "rgba(237, 129, 40, 0.89)",
                 "rgba(50, 172, 45, 0.97)"
               ],
-              "colorMode": null,
+              "decimals": 2,
               "pattern": "/.*/",
-              "thresholds": []
+              "thresholds": [],
+              "type": "number",
+              "unit": "short"
             }
           ],
+          "targets": [
+            {
+              "dsType": "influxdb",
+              "groupBy": [],
+              "measurement": "event",
+              "policy": "default",
+              "refId": "A",
+              "resultFormat": "table",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "level"
+                    ],
+                    "type": "field"
+                  }
+                ],
+                [
+                  {
+                    "params": [
+                      "text"
+                    ],
+                    "type": "field"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "tag",
+                  "operator": "=",
+                  "value": "./rules.lua"
+                },
+                {
+                  "condition": "OR",
+                  "key": "tag",
+                  "operator": "=",
+                  "value": "./heartbeat.lua"
+                }
+              ]
+            }
+          ],
+          "title": "Alerts",
           "transform": "table",
-          "pageSize": null,
-          "showHeader": true,
-          "columns": [],
-          "scroll": true,
-          "fontSize": "100%",
-          "sort": {
-            "col": 0,
-            "desc": true
-          },
-          "datasource": "events",
-          "links": [],
           "transparent": true,
-          "minSpan": 6,
-          "height": "200"
+          "type": "table"
         }
       ],
       "title": "New row"
@@ -1615,6 +1621,6 @@
   },
   "refresh": "10s",
   "schemaVersion": 12,
-  "version": 63,
+  "version": 67,
   "links": []
 }
