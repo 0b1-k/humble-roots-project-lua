@@ -266,7 +266,7 @@ local function eval(rule, msg, gateway, cfg)
   
   _trace(string.format("%s.%s = %s", rule.node or "_", rule.value, tostring(value)))
   
-  if rule.alert ~= nil then
+  if rule.alert ~= nil and rule.node ~= nil then
     if evalCondition(value, rule.alert, msg) then
       sendAlert(cfg, value, rule, rule.node)
     else
