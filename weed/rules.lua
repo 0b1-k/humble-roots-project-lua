@@ -109,22 +109,22 @@ local function evalCondition(value, condition)
   elseif condition.op ~= nil and condition.setpoint ~= nil then
     local setPoint = tonumber(condition.setpoint)
     if condition.op == "==" and value == setPoint then
-      _trace(string.format("%s %s", condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
       return true
     elseif condition.op == ">=" and value >= setPoint then
-      _trace(string.format("%s %s", condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
       return true
     elseif condition.op == "<=" and value <= setPoint then
-      _trace(string.format("%s %s", condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
       return true
     elseif condition.op == ">" and value > setPoint then
-      _trace(string.format("%s %s", condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
       return true
     elseif condition.op == "<" and value < setPoint then
-      _trace(string.format("%s %s", condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
       return true
     elseif condition.op == "!=" and value ~= setPoint then
-      _trace(string.format("%s %s", condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
       return true
     end
   elseif condition.op == nil and condition.cmd ~= nil then
@@ -265,14 +265,6 @@ local function eval(rule, msg, gateway, cfg)
   end
   
   _trace(string.format("%s.%s = %s", rule.node or "_", rule.value, tostring(value)))
-  
-  if rule.alert ~= nil and rule.node ~= nil then
-    if evalCondition(value, rule.alert, msg) then
-      sendAlert(cfg, value, rule, rule.node)
-    else
-      clearAlert(cfg, value, rule, rule.node)
-    end
-  end
 
   if rule.time ~= nil then
     local isTime = evalCondition(value, rule.time, msg)
@@ -283,6 +275,14 @@ local function eval(rule, msg, gateway, cfg)
     elseif not isTime then
       _traceDump("!time")
       return false
+    end
+  end
+  
+  if rule.alert ~= nil and rule.node ~= nil then
+    if evalCondition(value, rule.alert, msg) then
+      sendAlert(cfg, value, rule, rule.node)
+    else
+      clearAlert(cfg, value, rule, rule.node)
     end
   end
   
