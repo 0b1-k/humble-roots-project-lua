@@ -78,15 +78,17 @@ local function onData(data)
           local defaultCommand = nil
           local commandSent = false
           
-          for _, rule in pairs(ruleHighLevel.rules) do
-            rule.value = ruleHighLevel.value
-            rule.node = msgResolved.node
-            defaultCommand = ruleHighLevel.rules.default
-            if defaultCommand ~= nil then
-              rule.defaultCmd = defaultCommand.cmd
-            end
-            if not manualMode and rules.eval(rule, msg, gateway, cfg) then
-              commandSent = true
+          for ruleIdx, rule in pairs(ruleHighLevel.rules) do
+            if type(ruleIdx) == 'number' then
+              rule.value = ruleHighLevel.value
+              rule.node = msgResolved.node
+              defaultCommand = ruleHighLevel.rules.default
+              if defaultCommand ~= nil then
+                rule.defaultCmd = defaultCommand.cmd
+              end
+              if not manualMode and rules.eval(rule, msg, gateway, cfg) then
+                commandSent = true
+              end
             end
           end
           
