@@ -238,7 +238,7 @@ while true do
     _ENV.log.outfile = cfg.log.file
   end
   log.callback = writeEventToDB
-  log.info("Gateway started")
+  log.warn("Gateway started")
   heartbeat.initialize(cfg)
   listen.initialize(cfg.shell.bind, cfg.shell.port)
   if cfg.replay.record then
@@ -260,5 +260,5 @@ while true do
   end
   
   listen.shutdown()
-  log.info("Gateway stopped")
+  log.warn("Gateway stopped")
 end
