@@ -49,7 +49,7 @@ local function pulse(node)
     if timeoutObj.nodeTimeout <= 0 then
       local alertMsg = string.format("%s cleared: %s @ %s", cfg.control.nodeTimeout.title, node, os.date("%c", os.time()))
       sms.send(cfg, alertMsg)
-      log.info(alertMsg)
+      log.warn(alertMsg)
     end
     timeoutObj.nodeTimeout = cfg.control.nodeTimeout.freqSec
     timeoutObj.rebootTimeout = cfg.control.nodeTimeout.rebootAfter
