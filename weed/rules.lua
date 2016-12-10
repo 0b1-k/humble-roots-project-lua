@@ -264,7 +264,7 @@ local function eval(rule, msg, gateway, cfg)
     return false
   end
   
-  _trace(string.format("%s.%s = %s", rule.node or "_", rule.value, tostring(value)))
+  _trace(string.format("%s.%s == %s", rule.node or "_", rule.value, tostring(value)))
 
   if rule.time ~= nil then
     local isTime = evalCondition(value, rule.time, msg)
