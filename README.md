@@ -36,6 +36,7 @@ cd humble-roots-project-lua
 cp -R * ~/LuaDist/share
 cd ~/LuaDist/share/lua-serial
 mkdir build/lin32
+mkdir build/lin64
 make
 cp ./src/serial.lua ~/LuaDist/lib/lua
 cp ./build/lin32/libserial.so ~/LuaDist/lib/lua
@@ -70,7 +71,7 @@ On startup, the project will show a console output like this:
 
 [INFO  14:15:30] control.lua:180: Copyright (c) 2016 Fabien Royer
 [INFO  14:15:30] control.lua:185: Gateway started
-[INFO  14:15:30] ./listener.lua:17: HTTP listener @ ::1:42024
+[INFO  14:15:30] ./listener.lua:17: TCP listener @ ::1:42024
 [DEBUG 14:15:31] control.lua:172: Replay node=2&rssi=-43&t=srh&bat=4.77&low=0&pwr=1&p=1
 [DEBUG 14:15:32] control.lua:172: Replay node=20&rssi=-31&t=rly&bat=5.00&low=0&pwr=1&r=4&s=1
 [DEBUG 14:15:33] control.lua:172: Replay node=20&rssi=-31&t=rly&bat=5.00&low=0&pwr=1&r=5&s=1
@@ -82,7 +83,7 @@ On startup, the project will show a console output like this:
 ***InfluxDB***
 
 The Humble Roots Project logs all sensor data to [influxdb](https://influxdata.com/time-series-platform/influxdb/).
-Once influxdb is installed, create a 'sensors' database and enable influxdb logging in ./config/config.json.
+Once influxdb is installed, create a 'sensors' and an 'events' database then enable influxdb logging in ./config/config.json.
 
 ***Grafana***
 
