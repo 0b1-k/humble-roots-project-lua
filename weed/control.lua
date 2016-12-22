@@ -142,8 +142,12 @@ local function onShellMsg(line)
   local opts = shell.parse(line)
   if opts.q ~= nil and opts.q == "report" then
     return report.report(cfg)
-  end
-  if opts.m ~= nil then
+  elseif opts.w ~= nil then
+    local _, wOpt = string.find(line, "-w")
+    if wOpt ~= nil and #line > (wOpt + 2) then
+      log.log(string.sub(line, wOpt + 2))
+    end
+  elseif opts.m ~= nil then
     if opts.m == "manual" then
       manualMode = true
     else
