@@ -21,6 +21,7 @@ local modes = {
   { name = "warn",  color = "\27[33m", },
   { name = "error", color = "\27[31m", },
   { name = "fatal", color = "\27[35m", },
+  { name = "log",   color = "\27[37m", },
 }
 
 
