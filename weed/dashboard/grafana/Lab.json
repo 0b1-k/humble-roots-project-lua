@@ -322,7 +322,7 @@
             "threshold2": null,
             "threshold2Color": "rgba(234, 112, 112, 0.22)"
           },
-          "height": "400",
+          "height": "430",
           "id": 4,
           "isNew": true,
           "legend": {
@@ -654,6 +654,49 @@
                   "key": "node",
                   "operator": "=",
                   "value": "plant.top"
+                }
+              ]
+            },
+            {
+              "alias": "lux",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "$interval"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "null"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "rssi",
+              "policy": "default",
+              "refId": "H",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "mean"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "node",
+                  "operator": "=",
+                  "value": "lux"
                 }
               ]
             }
@@ -1414,6 +1457,137 @@
           ]
         },
         {
+          "aliasColors": {
+            "Lux": "#E5A8E2"
+          },
+          "bars": false,
+          "datasource": null,
+          "editable": true,
+          "error": false,
+          "fill": 1,
+          "grid": {
+            "threshold1": null,
+            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+            "threshold2": null,
+            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+          },
+          "height": "",
+          "id": 10,
+          "isNew": true,
+          "legend": {
+            "alignAsTable": true,
+            "avg": true,
+            "current": true,
+            "max": true,
+            "min": true,
+            "rightSide": false,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "links": [],
+          "nullPointMode": "connected",
+          "percentage": false,
+          "pointradius": 5,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [
+            {
+              "alias": "Lux",
+              "yaxis": 1
+            }
+          ],
+          "span": 6,
+          "stack": false,
+          "steppedLine": false,
+          "targets": [
+            {
+              "alias": "Lux",
+              "dsType": "influxdb",
+              "groupBy": [
+                {
+                  "params": [
+                    "$interval"
+                  ],
+                  "type": "time"
+                },
+                {
+                  "params": [
+                    "null"
+                  ],
+                  "type": "fill"
+                }
+              ],
+              "measurement": "lux",
+              "policy": "default",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "select": [
+                [
+                  {
+                    "params": [
+                      "value"
+                    ],
+                    "type": "field"
+                  },
+                  {
+                    "params": [],
+                    "type": "distinct"
+                  }
+                ]
+              ],
+              "tags": [
+                {
+                  "key": "node",
+                  "operator": "=",
+                  "value": "lux"
+                }
+              ]
+            }
+          ],
+          "timeFrom": null,
+          "timeShift": null,
+          "title": "Luminosity",
+          "tooltip": {
+            "msResolution": false,
+            "shared": true,
+            "value_type": "cumulative"
+          },
+          "transparent": true,
+          "type": "graph",
+          "xaxis": {
+            "show": true
+          },
+          "yaxes": [
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 10,
+              "max": null,
+              "min": null,
+              "show": true
+            },
+            {
+              "format": "short",
+              "label": null,
+              "logBase": 10,
+              "max": null,
+              "min": null,
+              "show": true
+            }
+          ]
+        }
+      ],
+      "title": "New row"
+    },
+    {
+      "collapse": false,
+      "editable": true,
+      "height": 193.63476816751063,
+      "panels": [
+        {
           "columns": [],
           "datasource": "events",
           "editable": true,
@@ -1423,7 +1597,7 @@
           "id": 9,
           "isNew": true,
           "links": [],
-          "minSpan": 6,
+          "minSpan": null,
           "pageSize": null,
           "scroll": true,
           "showHeader": true,
@@ -1503,15 +1677,7 @@
           "transform": "table",
           "transparent": true,
           "type": "table"
-        }
-      ],
-      "title": "New row"
-    },
-    {
-      "collapse": false,
-      "editable": true,
-      "height": 193.63476816751063,
-      "panels": [
+        },
         {
           "columns": [],
           "datasource": "events",
@@ -1530,7 +1696,7 @@
             "col": 0,
             "desc": true
           },
-          "span": 12,
+          "span": 6,
           "styles": [
             {
               "dateFormat": "YYYY-MM-DD HH:mm:ss",
@@ -1626,10 +1792,10 @@
   "annotations": {
     "list": [
       {
-        "name": "Logs",
         "datasource": "events",
+        "enable": false,
         "iconColor": "rgba(255, 96, 96, 1)",
-        "enable": true,
+        "name": "Logs",
         "query": "select text, level from event where $timeFilter",
         "tagsColumn": "level",
         "textColumn": ""
@@ -1638,6 +1804,6 @@
   },
   "refresh": "10s",
   "schemaVersion": 12,
-  "version": 80,
+  "version": 86,
   "links": []
 }

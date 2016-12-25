@@ -37,13 +37,15 @@
     "40": "climate",
     "50": "valve",
     "60": "plant.top",
+    "70": "lux",
     "plant": "2",
     "sump": "4",
     "relay": "20",
     "tank": "30",
     "climate": "40",
     "valve": "50",
-    "plant.top": "60"
+    "plant.top": "60",
+    "lux": "70"
   },
   "r":	{
     "0": "dh",
@@ -107,14 +109,16 @@
     "nodeTimeout": {
       "freqSec": 240,
       "title": "Heartbeat timeout",
+      "reboot": false,
       "rebootAfter": 600,
-      "rebootMsg": "Fatal heartbeat failure. Rebooting!"
+      "rebootMsg": "Fatal heartbeat failure. Rebooting!",
+      "rebootCmd": "sudo reboot"
     },
 
     "signal": [{
       "enabled": true,
       "value": "rssi",
-      "alert": {"op": "<", "setpoint": -50.0, "title": "Low signal strength alert"}
+      "alert": {"op": "<", "setpoint": -60.0, "title": "Low signal strength alert"}
     }],
 
     "plant.top": {
@@ -122,6 +126,18 @@
           "value": "p",
           "rules": [{
               "enabled": true,
+              "time": {"from": "18:50", "to": "19:20", "days": {"sun", "mon", "tue", "wed", "thu", "fri", "sat", "sun"}},
+              "on":  {"op": "<=", "setpoint": 110.0, "cmd": "-n relay -r water -s on"}
+              }, "default": {"cmd": "-n relay -r water -s off"}
+            ]
+          }]
+    },
+
+    "plant": {
+      "srh": [{
+          "value": "p",
+          "rules": [{
+              "enabled": false,
               "time": {"from": "18:50", "to": "19:20", "days": {"sun", "mon", "tue", "wed", "thu", "fri", "sat", "sun"}},
               "on":  {"op": "<=", "setpoint": 100.0, "cmd": "-n relay -r water -s on"}
               }, "default": {"cmd": "-n relay -r water -s off"}
@@ -163,13 +179,18 @@
               "time": {"from": "18:00", "to": "06:00"},
               "on":  {"op": ">", "setpoint": 25.0, "cmd": "-n relay -r vent -s on"},
               "alert": {"op": ">=", "setpoint": 27.5, "title": "High temperature alert"}
+              },{
+              "enabled": true,
+              "time": {"from": "06:01", "to": "17:59"},
+              "on":  {"op": ">", "setpoint": 22.0, "cmd": "-n relay -r vent -s on"},
+              "alert": {"op": ">=", "setpoint": 25, "title": "High temperature alert"}
               }, "default": {"cmd": "-n relay -r vent -s off"}
           ]},{
           "value": "rh",
             "rules": [{
               "enabled": true,
-              "on":  {"op": ">=", "setpoint": 60.0, "cmd": "-n relay -r dh -s on"},
-              "alert": {"op": ">=", "setpoint": 65.0, "title": "High humidity alert"}
+              "on":  {"op": ">=", "setpoint": 48.0, "cmd": "-n relay -r dh -s on"},
+              "alert": {"op": ">=", "setpoint": 52.0, "title": "High humidity alert"}
               }, "default": {"cmd": "-n relay -r dh -s off"}
             ]
         }]
@@ -189,6 +210,15 @@
         "vlv": [{
           "value": "v",
           "state": "s",
+          "rules": [{
+            "enabled": true
+            }]
+        }]
+    },
+
+    "lux": {
+        "lux": [{
+          "value": "lux",
           "rules": [{
             "enabled": true
             }]
