@@ -52,6 +52,7 @@ local function onData(data)
     log.debug(string.format("Ignoring: %s", data))
     return
   end
+  
   if not listening and data == "Listening" then
     log.info(data)
     listening = true
@@ -61,6 +62,7 @@ local function onData(data)
   if cfg.replay.record then
     replay.record(data)
   end
+  
   local msg = rules.decode(data)
   local msgResolved = rules.resolve(msg, cfg)
   if msg.node ~= nil and msg.tx == nil and msg.t ~= nil and msgResolved.node ~= nil then
