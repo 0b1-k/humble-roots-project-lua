@@ -29,17 +29,15 @@ local function elapseTime(seconds)
         sms.send(cfg, alertMsg)
         log.warn(alertMsg)
       end
+      nodes[node] = timeoutObj
     else
-      if timeoutObj.rebootTimeout <= 0 then
+      if cfg.control.nodeTimeout.reboot then
         local alertMsg = string.format("%s @ %s", cfg.control.nodeTimeout.rebootMsg, os.date("%c", os.time()))
         sms.send(cfg, alertMsg)
         log.fatal(alertMsg)
-        os.execute("reboot")
-      else
-        timeoutObj.rebootTimeout = timeoutObj.rebootTimeout - seconds
+        os.execute(cfg.control.nodeTimeout.rebootCmd)
       end
     end
-    nodes[node] = timeoutObj
   end
 end
 
