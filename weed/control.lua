@@ -187,6 +187,7 @@ local function onIdle()
   if config.isChanged() then
     cfg = config.getConfig(cfgFilePath)
     gateway.stop()
+    rules.resetAlerts()
     return
   end
   sms.receive(cfg, onSmsMsg)
