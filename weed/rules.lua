@@ -301,10 +301,15 @@ local function eval(rule, msg, gateway, cfg)
   return false
 end
 
+local function resetAlerts()
+  alerts = {}
+end
+
 local export = {}
 export.eval = eval
 export.decode = decode
 export.encode = encode
 export.resolve = resolve
 export.sendCommand = sendCommand
+export.resetAlerts = resetAlerts
 return export
