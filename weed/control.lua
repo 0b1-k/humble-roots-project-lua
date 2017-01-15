@@ -22,7 +22,11 @@ local cfg = config.getConfig(cfgFilePath)
 local function writeEventToDB(level, msg, info)
   if cfg.influxDB.enabled then
     db.pushEvent("event", level, info.short_src, msg)
-    db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
+    if cfg.influxdb.udp.enabled then
+      db.postUDP(cfg.influxDB.host, cfg.influxDB.udp.events)
+    else
+      db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
+    end
   end
 end
 
@@ -34,19 +38,27 @@ local function writeMsgToDB(msgResolved, valueId)
       msgResolved[valueId] = fixedValue
     end
     db.push(msgResolved, valueId)
-    db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.db)
+    if cfg.influxdb.udp.enabled then
+      db.postUDP(cfg.influxDB.host, cfg.influxDB.udp.sensors)
+    else
+      db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.db)
+    end
   end
 end
 
 local function writeSingleValueToDB(measurement, tag, value)
   if cfg.influxDB.enabled then
     db.pushSingleValue(measurement, tag, value)
-    db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.db)
+    if cfg.influxdb.udp.enabled then
+      db.postUDP(cfg.influxDB.host, cfg.influxDB.udp.sensors)
+    else
+      db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.db)
+    end
   end
 end
 
 local function onData(data)
-  log.trace(string.format("rx: %s", data))
+  log.trace(string.format("Packet: %s", data))
   
   if not cfg.serial.enabled and not cfg.replay.enabled then
     log.debug(string.format("Ignoring: %s", data))
@@ -68,7 +80,6 @@ local function onData(data)
   if msg.node ~= nil and msg.tx == nil and msg.t ~= nil and msgResolved.node ~= nil then
     
     -- sensor data was received...
-    log.info(string.format("Packet: %s", data))
     heartbeat.pulse(msgResolved.node)
     local nodeRules = cfg.control[msgResolved.node]
     if nodeRules ~= nil then
