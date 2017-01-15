@@ -15,7 +15,8 @@
     "host": "localhost",
     "port": 8086,
     "db": "sensors",
-    "events": "events"
+    "events": "events",
+    "udp" : {enabled: false, "sensors": 8089, "events": 8090}
   },
   "sms": {
     "enabled": false,
@@ -182,8 +183,8 @@
               },{
               "enabled": true,
               "time": {"from": "00:00", "to": "23:59"},
-              "on":  {"op": ">", "setpoint": 20.0, "cmd": "-n relay -r vent -s on"},
-              "alert": {"op": ">=", "setpoint": 21, "title": "High temperature alert"}
+              "on":  {"op": ">", "setpoint": 19.0, "cmd": "-n relay -r vent -s on"},
+              "alert": {"op": ">=", "setpoint": 20.0, "title": "High temperature alert"}
               }, "default": {"cmd": "-n relay -r vent -s off"}
           ]},{
           "value": "rh",
