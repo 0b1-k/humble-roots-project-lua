@@ -22,7 +22,7 @@ local cfg = config.getConfig(cfgFilePath)
 local function writeEventToDB(level, msg, info)
   if cfg.influxDB.enabled then
     db.pushEvent("event", level, info.short_src, msg)
-    if cfg.influxdb.udp.enabled then
+    if cfg.influxDB.udp.enabled then
       db.postUDP(cfg.influxDB.host, cfg.influxDB.udp.events)
     else
       db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
@@ -38,7 +38,7 @@ local function writeMsgToDB(msgResolved, valueId)
       msgResolved[valueId] = fixedValue
     end
     db.push(msgResolved, valueId)
-    if cfg.influxdb.udp.enabled then
+    if cfg.influxDB.udp.enabled then
       db.postUDP(cfg.influxDB.host, cfg.influxDB.udp.sensors)
     else
       db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.db)
@@ -49,7 +49,7 @@ end
 local function writeSingleValueToDB(measurement, tag, value)
   if cfg.influxDB.enabled then
     db.pushSingleValue(measurement, tag, value)
-    if cfg.influxdb.udp.enabled then
+    if cfg.influxDB.udp.enabled then
       db.postUDP(cfg.influxDB.host, cfg.influxDB.udp.sensors)
     else
       db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.db)
