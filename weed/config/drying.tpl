@@ -16,7 +16,7 @@
     "port": 8086,
     "db": "sensors",
     "events": "events",
-    "udp" : {enabled: false, "sensors": 8089, "events": 8090}
+    "udp" : {"enabled": true, "sensors": 8089, "events": 8090}
   },
   "sms": {
     "enabled": false,
