@@ -1,4 +1,5 @@
 local http = require("socket.http")
+local socket = require("socket")
 local ltn12 = require("ltn12")
 
 local function getServerUrl(address, port, db)
@@ -34,6 +35,17 @@ local function pushEvent(measurement, level, tag, text)
   table.insert(body, line)
 end
 
+-- https://github.com/influxdata/influxdb/blob/master/services/udp/README.md
+-- See the config snippet in ./config/influxdb-udp.conf to update the [[udp]] section of /etc/influxdb/influxdb.conf
+local function postUDP(address, port, timeout)
+  local reqbody = table.concat(body, "\n")
+  local sock = socket.udp()
+  sock:setpeername(address or "127.0.0.1", port or 8089)
+  sock:settimeout(timeout or 0.1)
+  sock:send(reqbody)
+  sock:close()
+end
+
 local function post(address, port, db)
     local reqbody = table.concat(body, "\n")
     body = {}
@@ -63,4 +75,5 @@ export.push = push
 export.pushSingleValue = pushSingleValue
 export.pushEvent = pushEvent
 export.post = post
+export.postUDP = postUDP
 return export
