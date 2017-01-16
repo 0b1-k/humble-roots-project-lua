@@ -35,20 +35,31 @@ local function pushEvent(measurement, level, tag, text)
   table.insert(body, line)
 end
 
+local function getMessageBody()
+    local msg = table.concat(body, "\n")
+    body = {}
+    return msg
+end
+
 -- https://github.com/influxdata/influxdb/blob/master/services/udp/README.md
 -- See the config snippet in ./config/influxdb-udp.conf to update the [[udp]] section of /etc/influxdb/influxdb.conf
-local function postUDP(address, port, timeout)
-  local reqbody = table.concat(body, "\n")
-  local sock = socket.udp()
+local function postUDP(address, port)
+  local reqbody = getMessageBody()
+  local sock, err = socket.udp()
+  if sock == nil then
+    print(string.format("Failed to create UDP socket, error: %s", err))
+    return
+  end
   sock:setpeername(address or "127.0.0.1", port or 8089)
-  sock:settimeout(timeout or 0.1)
-  sock:send(reqbody)
+  local result, err1 = sock:send(reqbody)
+  if result == nil then
+    print(string.format("UDP socket error: %s, msg: %s, len: %s", err1, reqbody, tostring(#reqbody)))
+  end
   sock:close()
 end
 
 local function post(address, port, db)
-    local reqbody = table.concat(body, "\n")
-    body = {}
+    local reqbody = getMessageBody()
     local respbody = {}
     local result, respcode, _, respstatus = http.request {
         method = "POST",
