@@ -251,6 +251,7 @@ log.info("Copyright (c) 2016 Fabien Royer")
 
 while true do
   listening = false
+  db.initialize()
   _ENV.log.level = cfg.log.level
   if cfg.log.file ~= nil then
     _ENV.log.outfile = cfg.log.file
@@ -279,4 +280,5 @@ while true do
   
   listen.shutdown()
   log.warn("Gateway stopped")
+  db.shutdown()
 end

@@ -2,11 +2,25 @@ local http = require("socket.http")
 local socket = require("socket")
 local ltn12 = require("ltn12")
 
+local body = {}
+local sock = {}
+
+local function initialize()
+  local err = ""
+  sock, err = socket.udp()
+  if sock == nil then
+    error(string.format("Failed to create UDP socket, error: %s", err))
+  end
+end
+
+local function shutdown()
+  sock:close()
+  sock = {}
+end
+
 local function getServerUrl(address, port, db)
     return string.format("http://%s:%s/write?db=%s", address, tostring(port), db)
 end
-
-local body = {}
 
 local function push(data, valueId)
   if valueId == nil then
@@ -45,17 +59,14 @@ end
 -- See the config snippet in ./config/influxdb-udp.conf to update the [[udp]] section of /etc/influxdb/influxdb.conf
 local function postUDP(address, port)
   local reqbody = getMessageBody()
-  local sock, err = socket.udp()
-  if sock == nil then
-    print(string.format("Failed to create UDP socket, error: %s", err))
-    return
-  end
-  sock:setpeername(address or "127.0.0.1", port or 8089)
-  local result, err1 = sock:send(reqbody)
+  local result, err = sock:setpeername(address or "127.0.0.1", port or 8089)
   if result == nil then
-    print(string.format("UDP socket error: %s, msg: %s, len: %s", err1, reqbody, tostring(#reqbody)))
+    print(string.format("Failed to set UDP socket peer name, error: %s", err))
   end
-  sock:close()
+  result, err = sock:send(reqbody)
+  if result == nil then
+    print(string.format("UDP socket error: %s, msg: %s, len: %s", err, reqbody, tostring(#reqbody)))
+  end
 end
 
 local function post(address, port, db)
@@ -87,4 +98,6 @@ export.pushSingleValue = pushSingleValue
 export.pushEvent = pushEvent
 export.post = post
 export.postUDP = postUDP
+export.initialize = initialize
+export.shutdown = shutdown
 return export
