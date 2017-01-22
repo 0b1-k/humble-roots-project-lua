@@ -247,7 +247,7 @@ end
 
 log.info("The Humble Roots Project")
 log.info(logo.get("./ascii_lf.drg"))
-log.info("Copyright (c) 2016 Fabien Royer")
+log.info("Copyright (c) 2015-2017 by Fabien Royer")
 
 while true do
   listening = false
