@@ -4,6 +4,20 @@ local ltn12 = require("ltn12")
 
 local body = {}
 local sock = {}
+local precision = ""
+
+local function setPrecision(p)
+  if p == nil then
+    precision = ""
+    return
+  end
+  local start, stop = string.find("n,u,ms,s,m,h", p)
+  if start ~= nil and stop ~= nil then
+    precision = p
+  else
+    error(string.format("Invalid time precision: %s", p))
+  end
+end
 
 local function initialize()
   local err = ""
@@ -19,10 +33,22 @@ local function shutdown()
 end
 
 local function getServerUrl(address, port, db)
+  if #precision > 0 then
+    return string.format("http://%s:%s/write?db=%s&precision=%s", address, tostring(port), db, precision)
+  else
     return string.format("http://%s:%s/write?db=%s", address, tostring(port), db)
+  end
 end
 
-local function push(data, valueId)
+local function appendTimeStamp(timestamp)
+  if timestamp ~= nil then
+    return string.format(" %s", tostring(timestamp))
+  else
+    return ""
+  end
+end
+
+local function push(data, valueId, timestamp)
   if valueId == nil then
     return
   end
@@ -35,17 +61,17 @@ local function push(data, valueId)
           valueData = tostring(v)
       end
   end
-  local line = string.format("%s,%s value=%s\n", valueId, table.concat(scratch, ","), tostring(valueData))
+  local line = string.format("%s,%s value=%s%s", valueId, table.concat(scratch, ","), tostring(valueData), appendTimeStamp(timestamp))
   table.insert(body, line)
 end
 
-local function pushSingleValue(measurement, tag, value)
-  local line = string.format("%s,tag=%s value=%s\n", measurement, tag, tostring(value))
+local function pushSingleValue(measurement, tag, value, timestamp)
+  local line = string.format("%s,tag=%s value=%s%s", measurement, tag, tostring(value), appendTimeStamp(timestamp))
   table.insert(body, line)
 end
 
-local function pushEvent(measurement, level, tag, text)
-  local line = string.format("%s,level=%s,tag=%s level=\"%s\",text=\"%s\"\n", measurement, level, tag, level, tostring(text))
+local function pushEvent(measurement, level, tag, text, timestamp)
+  local line = string.format("%s,level=%s,tag=%s level=\"%s\",text=\"%s\"%s", measurement, level, tag, level, tostring(text), appendTimeStamp(timestamp))
   table.insert(body, line)
 end
 
@@ -84,12 +110,16 @@ local function post(address, port, db)
     }
     if result ~= nil and result == 1 then
       if respcode ~= 200 and respcode ~= 204 then
-        print(string.format("InfluxDB response %s", respstatus))
+        local json = require("dkjson")
+        local errorInfo, _, err = json.decode(respbody[1], 1, nil)
+        print(string.format("InfluxDB response %s, error: %s", respstatus, errorInfo.error))
+      else
+        return true
       end
     else
       print("InfluxDB write failure!")
     end
-    return respbody
+    return false
 end
 
 local export = {}
@@ -100,4 +130,5 @@ export.post = post
 export.postUDP = postUDP
 export.initialize = initialize
 export.shutdown = shutdown
+export.setPrecision = setPrecision
 return export
