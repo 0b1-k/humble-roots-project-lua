@@ -52,6 +52,9 @@ local function retry(msg)
     end
   else
     log.error(string.format("Anomaly! Missing retry obj for nak'ed cmd: %s!", cmdFinal))
+    for cmdFinal, retryObj in pairs(retryQueue) do
+      log.error(string.format(">>> cmd: %s, retries: %s", cmdFinal, retryObj.retries))
+    end
   end
 end
 
