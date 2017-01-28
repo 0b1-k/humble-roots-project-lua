@@ -98,6 +98,10 @@
       "on": 1
       }
   },
+  "alerts": {
+    "raise": "RAISED",
+    "clear": "CLEARED"
+  },
   "report": {
     "noData": "No data available"
   },
