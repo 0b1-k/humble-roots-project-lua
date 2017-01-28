@@ -175,33 +175,46 @@ local function encodeShellToDevice(opts, cfg)
   end
 end
 
-local function composeAlert(value, rule, nodeName, clear)
-  local clearMark = "|CLEARED|"
-  if clear == nil or not clear then
-    clearMark = "|RAISED|"
+local oppositeOp = {}
+oppositeOp[">"] = "<"
+oppositeOp["<"] = ">"
+oppositeOp[">="] = "<="
+oppositeOp["<="] = "=>"
+oppositeOp["=="] = "!="
+oppositeOp["!="] = "=="
+
+local function composeAlert(cfg, value, rule, clear)
+  local mark = ""
+  local sign = ""
+  if clear then
+    mark = cfg.alerts.clear
+    sign = oppositeOp[rule.alert.op]
+  else
+    mark = cfg.alerts.raise
+    sign = rule.alert.op
   end
   local msg = string.format(
     "[%s] %s %s %s %s %s @ %s",
-    nodeName,
+    rule.node,
     rule.alert.title,
-    clearMark,
+    mark,
     tostring(value),
-    rule.alert.op,
+    sign,
     tostring(rule.alert.setpoint),
     os.date("%c", os.time())
   )
   return msg
 end
 
-local function getRuleHash(rule, nodeName)
-  return md5.sum(string.format("%s%s", nodeName, tostring(rule)))
+local function getRuleHash(rule)
+  return md5.sum(string.format("%s%s", rule.node, tostring(rule)))
 end
 
-local function sendAlert(cfg, value, rule, nodeName)
-  local hash = getRuleHash(rule, nodeName)
+local function sendAlert(cfg, value, rule)
+  local hash = getRuleHash(rule)
   if alerts[hash] == nil then
     alerts[hash] = getAlertObj()
-    local alertMsg = composeAlert(value, rule, nodeName)
+    local alertMsg = composeAlert(cfg, value, rule, false)
     sms.send(cfg, alertMsg)
     log.warn(alertMsg)
   else
@@ -210,11 +223,11 @@ local function sendAlert(cfg, value, rule, nodeName)
   end
 end
 
-local function clearAlert(cfg, value, rule, nodeName)
-  local hash = getRuleHash(rule, nodeName)
+local function clearAlert(cfg, value, rule)
+  local hash = getRuleHash(rule)
   if alerts[hash] ~= nil then
     alerts[hash] = nil
-    local alertMsg = composeAlert(value, rule, nodeName, true)
+    local alertMsg = composeAlert(cfg, value, rule, true)
     sms.send(cfg, alertMsg)
     log.warn(alertMsg)
   end
@@ -280,9 +293,9 @@ local function eval(rule, msg, gateway, cfg)
   
   if rule.alert ~= nil and rule.node ~= nil then
     if evalCondition(value, rule.alert, msg) then
-      sendAlert(cfg, value, rule, rule.node)
+      sendAlert(cfg, value, rule)
     else
-      clearAlert(cfg, value, rule, rule.node)
+      clearAlert(cfg, value, rule)
     end
   end
   
