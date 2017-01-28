@@ -18,6 +18,16 @@ local function initialize(config)
   end
 end
 
+local function composeAlert(nodeName, clear)
+  local mark = ""
+  if clear then
+    mark = cfg.alerts.clear
+  else
+    mark = cfg.alerts.raise
+  end
+  return string.format("[%s] %s %s @ %s", nodeName, cfg.control.nodeTimeout.title, mark, os.date("%c", os.time()))
+end
+
 local function elapseTime(seconds)
   for node, _ in pairs(nodes) do
     local timeoutObj = nodes[node]
@@ -25,14 +35,14 @@ local function elapseTime(seconds)
       timeoutObj.nodeTimeout = timeoutObj.nodeTimeout - seconds
       if timeoutObj.nodeTimeout <= 0 then
         timeoutObj.rebootTimeout = (cfg.control.nodeTimeout.rebootAfter - cfg.control.nodeTimeout.freqSec)
-        local alertMsg = string.format("%s: %s @ %s", cfg.control.nodeTimeout.title, node, os.date("%c", os.time()))
+        local alertMsg = composeAlert(node, false)
         sms.send(cfg, alertMsg)
         log.warn(alertMsg)
       end
       nodes[node] = timeoutObj
     else
       if cfg.control.nodeTimeout.reboot then
-        local alertMsg = string.format("%s @ %s", cfg.control.nodeTimeout.rebootMsg, os.date("%c", os.time()))
+        local alertMsg = string.format("[%s] %s @ %s", node, cfg.control.nodeTimeout.rebootMsg, os.date("%c", os.time()))
         sms.send(cfg, alertMsg)
         log.fatal(alertMsg)
         os.execute(cfg.control.nodeTimeout.rebootCmd)
@@ -45,7 +55,7 @@ local function pulse(node)
   local timeoutObj = nodes[node]
   if timeoutObj ~= nil then
     if timeoutObj.nodeTimeout <= 0 then
-      local alertMsg = string.format("%s cleared: %s @ %s", cfg.control.nodeTimeout.title, node, os.date("%c", os.time()))
+      local alertMsg = composeAlert(node, true)
       sms.send(cfg, alertMsg)
       log.warn(alertMsg)
     end
