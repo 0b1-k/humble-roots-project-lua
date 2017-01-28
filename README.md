@@ -18,7 +18,13 @@ sudo apt-get install git
 
 ***LuaDist***
 
-Install [LuaDist](http://luadist.org/).
+Install [LuaDist](http://luadist.org/) in the home folder.
+
+```
+cd ~
+curl -L "https://tinyurl.com/luadist" > install.sh # you can review the file
+sh install.sh
+```
 
 Install the LuaDist packages required by the Humble Roots Project:
 
@@ -39,7 +45,12 @@ mkdir build/lin32
 mkdir build/lin64
 make
 cp ./src/serial.lua ~/LuaDist/lib/lua
+
+# For 32-bit platforms
 cp ./build/lin32/libserial.so ~/LuaDist/lib/lua
+# or 64-bit platforms
+cp ./build/lin64/libserial.so ~/LuaDist/lib/lua
+
 cd ~/LuaDist/share/weed/config
 mv config.tpl config.json
 cd ..
