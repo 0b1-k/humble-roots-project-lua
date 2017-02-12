@@ -2,6 +2,9 @@ local lfs = require("lfs")
 
 local function getFileChangeInfoObj(path)
   local attr = lfs.attributes(path)
+  if attr == nil then
+    print(string.format("Config file %s not found!", path))
+  end
   local t = {
     ["lastModTime"] = attr.modification,
     ["path"] = path
