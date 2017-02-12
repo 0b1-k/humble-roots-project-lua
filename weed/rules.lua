@@ -179,7 +179,7 @@ local oppositeOp = {}
 oppositeOp[">"] = "<"
 oppositeOp["<"] = ">"
 oppositeOp[">="] = "<="
-oppositeOp["<="] = "=>"
+oppositeOp["<="] = ">="
 oppositeOp["=="] = "!="
 oppositeOp["!="] = "=="
 
