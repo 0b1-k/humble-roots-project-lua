@@ -16,7 +16,7 @@ local logo = require("logo")
 local listening = false
 local manualMode = false
 
-local cfgFilePath = "./config/config.json"
+local cfgFilePath = "./config/config.toml"
 local cfg = config.getConfig(cfgFilePath)
 
 local function writeEventToDB(level, msg, info)
@@ -81,60 +81,64 @@ local function onData(data)
     
     -- sensor data was received...
     heartbeat.pulse(msgResolved.node)
-    local nodeRules = cfg.control[msgResolved.node]
-    if nodeRules ~= nil then
-      local devRules = nodeRules[msg.t]
-      if devRules ~= nil then     
-        log.trace(string.format("Rule type: %s.%s", msgResolved.node, msgResolved.t))
-        for _, ruleHighLevel in pairs(devRules) do
-          
-          local defaultCommand = nil
-          local commandSent = false
-          
-          for ruleIdx, rule in pairs(ruleHighLevel.rules) do
-            if type(ruleIdx) == 'number' then
-              rule.value = ruleHighLevel.value
-              rule.node = msgResolved.node
-              defaultCommand = ruleHighLevel.rules.default
-              if defaultCommand ~= nil then
-                rule.defaultCmd = defaultCommand.cmd
-              end
-              if not manualMode and rules.eval(rule, msg, gateway, cfg) then
-                commandSent = true
-              end
-            end
-          end
-          
-          if not manualMode and not commandSent and defaultCommand ~= nil then
-            log.trace(string.format("Default Cmd: %s", defaultCommand.cmd))
-            rules.sendCommand(defaultCommand.cmd, gateway, cfg)
-          end
-          
-          local value = tonumber(msg[ruleHighLevel.value])
-          
-          if value ~= nil then
-            if ruleHighLevel.state ~= nil then
-              writeMsgToDB(msgResolved, ruleHighLevel.state)
-              report.update(msgResolved.node, ruleHighLevel.value, msgResolved[ruleHighLevel.value], ruleHighLevel.state, msgResolved[ruleHighLevel.state])
-            else
-              writeMsgToDB(msgResolved, ruleHighLevel.value)
-              report.update(msgResolved.node, ruleHighLevel.value, value)
-            end
-          end  
-          
+    
+    local _rules = cfg.control[msgResolved.node][msgResolved.t]
+    
+    if _rules ~= nil then
+      local ruleIndex = 0
+      local commandSent = false
+      local lastValueName = ""
+      
+      while true do
+        local rule = cfg.control[msgResolved.node][msgResolved.t][tostring(ruleIndex)]
+
+        if rule == nil then
+          break
         end
+        
+        log.info(string.format("Sensor rule: %s.%s.%s", msgResolved.node, msgResolved.t, ruleIndex))
+        
+        rule.node = msgResolved.node
+        
+        if _rules.cmd ~= nil then
+          rule.defaultCmd = _rules.cmd
+        end
+        
+        if not manualMode and rules.eval(rule, msg, gateway, cfg) then
+          commandSent = true
+        end
+        
+        if lastValueName ~= rule.value then
+          lastValueName = rule.value
+          local value = tonumber(msg[rule.value])
+          if value ~= nil then
+            if rule.state ~= nil then
+              writeMsgToDB(msgResolved, rule.state)
+              report.update(msgResolved.node, msgResolved[rule.value], value, rule.state, msgResolved[rule.state])
+            else
+              writeMsgToDB(msgResolved, rule.value)
+              report.update(msgResolved.node, rule.value, value)
+            end
+          end
+        end
+      
+        ruleIndex = ruleIndex + 1
+      end
+      
+      if not manualMode and not commandSent and _rules.cmd ~= nil then
+        log.trace(string.format("Default Cmd: %s", _rules.cmd))
+        rules.sendCommand(_rules.cmd, gateway, cfg)
       end
     end
     
     if cfg.control.signal ~= nil then
       log.trace("Rule type: signal")
-      for _, rule in pairs(cfg.control.signal) do
-        rule.node = msgResolved.node
-        if not manualMode then
-          rules.eval(rule, msg, gateway, cfg)
-        end
-        writeMsgToDB(msgResolved, rule.value)
+      local rule = cfg.control.signal
+      rule.node = msgResolved.node
+      if not manualMode then
+        rules.eval(rule, msg, gateway, cfg)
       end
+      writeMsgToDB(msgResolved, rule.value)
     end
 
   elseif msg.node ~= nil and msg.tx ~= nil and msg.t == nil then
@@ -148,7 +152,7 @@ end
 
 local function onShellMsg(line)
   line = string.lower(line)
-  log.info(string.format("Shell: %s", line))
+  log.warn(string.format("Shell command: %s", line))
   if line == "reset" then
     return nil
   end
@@ -166,16 +170,20 @@ local function onShellMsg(line)
     else
       manualMode = false
     end
-    log.info(string.format("Switched to '%s' mode", opts.m))
-  else
+    log.warn(string.format("Switched to '%s' mode", opts.m))
+  elseif opts.n ~= nil and opts.s ~= nil and (opts.r ~= nil or opts.v ~= nil) then
     local cmdFinal = rules.sendCommand(line, gateway, cfg)
     if cmdFinal ~= nil then
-      log.info(string.format("Sent shell command: %s", cmdFinal))
+      log.warn(string.format("Sent shell command: %s", cmdFinal))
     else
-      local err = string.format("Invalid shell command: %s", line)
+      local err = string.format("Bad shell command param(s): %s", line)
       log.error(err)
       return err
     end
+  else
+    local err = string.format("Invalid shell command: %s", line)
+    log.error(err)
+    return err
   end
   return "ok"
 end
@@ -196,6 +204,7 @@ local nextTime = getNextTime()
 
 local function onIdle()
   if config.isChanged() then
+    log.warn("Config changed! Restarting...")
     cfg = config.getConfig(cfgFilePath)
     gateway.stop()
     rules.resetAlerts()
@@ -206,36 +215,48 @@ local function onIdle()
     listen.receive(onShellMsg)
   end
   if os.time() >= nextTime then
-    log.info(string.format("Tick: %s", tostring(cfg.control.tick.freqSec)))
+    log.info(string.format("Tick: %s", cfg.control.tick.freqSec))
     if listening and cfg.control.timers ~= nil then
+      
       if not manualMode then
         heartbeat.elapseTime(cfg.control.tick.freqSec)
       end
+      
       for timerName, timer in pairs(cfg.control.timers) do
-        log.info(string.format("Timer: %s", timerName))
-        for _, timerRuleArray in pairs(timer) do
-          local defaultCommand = nil
-          local commandSent = false
-          for ruleIdx, rule in pairs(timerRuleArray.rules) do
-            if type(ruleIdx) == 'number' then
-              rule.value = timerRuleArray.value
-              defaultCommand = timerRuleArray.rules.default
-              if defaultCommand ~= nil then
-                rule.defaultCmd = defaultCommand.cmd
-              end
-              if not manualMode and rules.eval(rule, {ts=os.time()}, gateway, cfg) then
-                commandSent = true
-              end
-            end
+  
+        local commandSent = false
+        local ruleIndex = 0
+        
+        while true do
+          local rule = timer[tostring(ruleIndex)]
+          
+          if rule == nil then
+            break
           end
-          if not manualMode and not commandSent and defaultCommand ~= nil then
-            log.trace(string.format("Default Cmd: %s", defaultCommand.cmd))
-            rules.sendCommand(defaultCommand.cmd, gateway, cfg)
+          
+          log.info(string.format("Timer rule: %s.%s", timerName, ruleIndex))
+          
+          if timer.cmd ~= nil then
+            rule.defaultCmd = timer.cmd
           end
+          
+          if not manualMode and rules.eval(rule, {ts=os.time()}, gateway, cfg) then
+            commandSent = true
+          end
+            
+          ruleIndex = ruleIndex + 1
         end
+          
+        if not manualMode and not commandSent and timer.cmd ~= nil then
+          log.trace(string.format("Default Cmd: %s", timer.cmd))
+          rules.sendCommand(timer.cmd, gateway, cfg)
+        end
+        
       end
     end
+    
     nextTime = getNextTime()
+    
   elseif listening and cfg.replay.enabled then
     local data = replay.getNext()
     if data ~= nil then
