@@ -1,4 +1,4 @@
-local md5 = require("md5")
+--local md5 = require("md5")
 local sms = require("sms")
 local utils = require("utils")
 local shell = require("shell")
@@ -95,6 +95,11 @@ local function evalCondition(value, condition)
   end
   if condition.from ~= nil and condition.to ~= nil then
     _trace(string.format("from %s to %s", condition.from, condition.to))
+    
+    if condition.from == "00:00" and condition.to == "23:59" then
+      return true
+    end
+    
     local from = utils.splitString(condition.from, ':')
     local to = utils.splitString(condition.to, ':')
     local fromTime = os.date("*t", os.time())
@@ -109,22 +114,22 @@ local function evalCondition(value, condition)
   elseif condition.op ~= nil and condition.setpoint ~= nil then
     local setPoint = tonumber(condition.setpoint)
     if condition.op == "==" and value == setPoint then
-      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", value, condition.op, condition.setpoint))
       return true
     elseif condition.op == ">=" and value >= setPoint then
-      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", value, condition.op, condition.setpoint))
       return true
     elseif condition.op == "<=" and value <= setPoint then
-      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", value, condition.op, condition.setpoint))
       return true
     elseif condition.op == ">" and value > setPoint then
-      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", value, condition.op, condition.setpoint))
       return true
     elseif condition.op == "<" and value < setPoint then
-      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", value, condition.op, condition.setpoint))
       return true
     elseif condition.op == "!=" and value ~= setPoint then
-      _trace(string.format("%s %s %s", tostring(value), condition.op, condition.setpoint))
+      _trace(string.format("%s %s %s", value, condition.op, condition.setpoint))
       return true
     end
   elseif condition.op == nil and condition.cmd ~= nil then
@@ -198,16 +203,16 @@ local function composeAlert(cfg, value, rule, clear)
     rule.node,
     rule.alert.title,
     mark,
-    tostring(value),
+    value,
     sign,
-    tostring(rule.alert.setpoint),
+    rule.alert.setpoint,
     os.date("%c", os.time())
   )
   return msg
 end
 
 local function getRuleHash(rule)
-  return md5.sum(string.format("%s%s", rule.node, tostring(rule)))
+  return string.format("%s%s", rule.node, rule)
 end
 
 local function sendAlert(cfg, value, rule)
@@ -246,6 +251,11 @@ local function commandSink(cmdFinal, gateway, cfg)
 end
 
 local function sendCommand(cmd, gateway, cfg)
+  if cmd == nil then
+    log.error(string.format("Empty command!"))
+    return nil
+  end
+  
   local start, _ = string.find(cmd, "-n")
   if start == 1 then
     local opts = shell.parse(cmd)
@@ -267,6 +277,7 @@ end
 
 local function eval(rule, msg, gateway, cfg)
   if not rule.enabled then
+    log.trace("Rule disabled")
     return false
   end
   
@@ -277,11 +288,11 @@ local function eval(rule, msg, gateway, cfg)
     return false
   end
   
-  _trace(string.format("%s.%s == %s", rule.node or "_", rule.value, tostring(value)))
+  _trace(string.format("%s.%s == %s", rule.node or "_", rule.value, value))
 
   if rule.time ~= nil then
     local isTime = evalCondition(value, rule.time, msg)
-    if rule.off ~= nil and rule.defaultCmd == nil and not isTime then
+    if rule.off ~= nil and rule.off.cmd ~= nil and rule.defaultCmd == nil and not isTime then
       _traceDump("off")
       sendCommand(rule.off.cmd, gateway, cfg)
       return true
@@ -299,11 +310,11 @@ local function eval(rule, msg, gateway, cfg)
     end
   end
   
-  if rule.on ~= nil and evalCondition(value, rule.on, msg) then
+  if rule.on ~= nil and rule.on.cmd ~= nil and evalCondition(value, rule.on, msg) then
     _traceDump("on")
     sendCommand(rule.on.cmd, gateway, cfg)
     return true
-  elseif rule.off ~= nil and rule.defaultCmd == nil and evalCondition(value, rule.off, msg) then
+  elseif rule.off ~= nil and rule.off.cmd ~= nil and rule.defaultCmd == nil and evalCondition(value, rule.off, msg) then
     _traceDump("off")
     sendCommand(rule.off.cmd, gateway, cfg)
     return true
