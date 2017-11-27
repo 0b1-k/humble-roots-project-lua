@@ -6,7 +6,7 @@ local function update(nodeName, valueName, value, stateName, state)
     stateObj = {}
   end
   if stateName ~= nil and state ~= nil then
-    stateObj[value] = state
+    stateObj[valueName] = state
   else
     stateObj[valueName] = value
   end
@@ -34,7 +34,7 @@ local function report(cfg)
       if count == items then
         sep = ""
       end
-      table.insert(report, #report + 1, k .. ":" .. tostring(v) .. sep)
+      table.insert(report, #report + 1, string.format("%s:%s%s", k, v, sep))
       empty = false
     end
     table.insert(report, #report + 1, ")\n")
