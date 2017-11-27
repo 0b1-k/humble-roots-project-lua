@@ -3,7 +3,7 @@ local config = require("config")
 
 local function send(arg)
   print("cmd: " .. arg[1])
-  local cfg = config.getConfig("./config/config.json")
+  local cfg = config.getConfig("./config/config.toml")
   local cli = 0
   local err = ""
   cli, err = socket.connect(cfg.shell.bind, cfg.shell.port)
