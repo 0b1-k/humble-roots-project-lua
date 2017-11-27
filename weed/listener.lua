@@ -14,7 +14,7 @@ local function initialize(bind, portNum)
   end
   server:settimeout(0.01)
   local ip, port = server:getsockname()
-  log.info(string.format("Shell listening @ %s:%s", ip, tostring(port)))
+  log.info(string.format("Shell listening @ %s:%s", ip, port))
 end
 
 local function receive(onShellMsg)
