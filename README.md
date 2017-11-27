@@ -1,8 +1,10 @@
+**Summary**
+
+The Humble Roots Project is a grow room automation control system designed for stable non-stop operation. It is managed through a single configuration file and can communicate with an administrator over SMS text messages. Data visualization is provided in the form of Grafana dashboards powered by InfluxDB.
+
 **Dependencies**
 
-***Raspbian Jessie Lite***
-
-https://www.raspberrypi.org/downloads/raspbian/
+Any platform capable of running Lua + sockets + file system support. Tested under Ubunt 16, 17 and Raspbian.
 
 ***CMake***
 
@@ -20,19 +22,6 @@ sudo apt-get install git
 
 Install [LuaDist](http://luadist.org/) in the home folder.
 
-```
-cd ~
-curl -L "https://tinyurl.com/luadist" > install.sh # you can review the file
-sh install.sh
-```
-
-Install the LuaDist packages required by the Humble Roots Project:
-
-```
-./LuaDist/bin/luadist install dkjson
-./LuaDist/bin/luadist install md5
-```
-
 ***Humble Roots Project***
 
 ```
@@ -40,21 +29,32 @@ cd ~
 git clone https://github.com/fabienroyer/humble-roots-project-lua.git
 cd humble-roots-project-lua
 cp -R * ~/LuaDist/share
+
+
+# Compile the Serial Communication Library
 cd ~/LuaDist/share/lua-serial
-mkdir build/lin32
-mkdir build/lin64
 make
-cp ./src/serial.lua ~/LuaDist/lib/lua
 
-# For 32-bit platforms
-cp ./build/lin32/libserial.so ~/LuaDist/lib/lua
+# Copy the library to the project folder. For 32-bit platforms:
+cp ./build/lin32/libserial.so ~/LuaDist/share/weed/lua
 # or 64-bit platforms
-cp ./build/lin64/libserial.so ~/LuaDist/lib/lua
+cp ./build/lin64/libserial.so ~/LuaDist/share/weed/lua
 
+# Compile the SMS PDU encoding / decoding library
+cd ~/LuaDist/share/smspdu
+make
+
+# Copy the library to the project folder. For 32-bit platforms
+cp ./build/lin32/smspdu.so ~/LuaDist/share/weed/lua
+# or 64-bit platforms
+cp ./build/lin64/smspdu.so ~/LuaDist/share/weed/lua
+
+# Copy the template config file to a usable .toml config file
 cd ~/LuaDist/share/weed/config
-mv config.tpl config.json
+mv config.tpl config.toml
 cd ..
-sudo ./../../bin/lua control.lua
+# Start the project
+./../../bin/lua control.lua
 ```
 
 On startup, the project will show a console output like this:
@@ -80,7 +80,7 @@ On startup, the project will show a console output like this:
 					  	|
 
 
-[INFO  14:15:30] control.lua:180: Copyright (c) 2016 Fabien Royer
+[INFO  14:15:30] control.lua:180: Copyright (c) 2017 Fabien Royer
 [INFO  14:15:30] control.lua:185: Gateway started
 [INFO  14:15:30] ./listener.lua:17: TCP listener @ ::1:42024
 [DEBUG 14:15:31] control.lua:172: Replay node=2&rssi=-43&t=srh&bat=4.77&low=0&pwr=1&p=1
@@ -93,17 +93,12 @@ On startup, the project will show a console output like this:
 
 ***InfluxDB***
 
-The Humble Roots Project logs all sensor data to [influxdb](https://influxdata.com/time-series-platform/influxdb/).
-Once influxdb is installed, create a 'sensors' and an 'events' database then enable influxdb logging in ./config/config.json.
+All sensor data is logged to [influxdb](https://influxdata.com/time-series-platform/influxdb/).
+Once influxdb is installed, create a 'sensors' and an 'events' database, then enable influxdb logging in ./config/config.toml. See /weed/config/influxdb-udp.conf for a ready to use config snippet for communicating with InfluxDB over UDP (recommended over HTTP).
 
 ***Grafana***
 
-The Humble Roots Project uses Grafana to plot sensor data. Enable it in ./config/config.json.
-Once Grafana is installed, configure it to use the influxdb instance previously installed and import the
+Uses Grafana to plot sensor data. Once Grafana is installed, configure it to use the Influxdb instance previously installed and import the
 Humble Roots Project dashboard from ./dashboard/grafana/Lab.json.
 
-***smsd***
-
-The Humble Roots Project relies on [smsd](http://smstools3.kekekasvi.com/) to send and receive SMS notifications if enabled.
-Once smsd is installed, enable it in ./config/config.json.
 
