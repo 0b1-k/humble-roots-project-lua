@@ -197,3 +197,7 @@ luac.out
 /mobdebug/example/start.lua
 /weed/logs/hroots-error.log
 /weed/logs/hroots.log
+
+weed/\.vscode/launch\.json
+
+weed/\.vscode/settings\.json
