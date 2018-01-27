@@ -238,7 +238,15 @@ local function clearAlert(cfg, value, rule)
   end
 end
 
+local lastCommandSent = ""
 local function commandSink(cmdFinal, gateway, cfg)
+  if cmdFinal == lastCommandSent then
+    log.debug(string.format("Ignoring duplicate cmd: %s", cmdFinal))
+    return nil
+  end
+  
+  lastCommandSent = cmdFinal
+  
   if cmdFinal ~= nil then
     if cfg.serial.enabled then
       gateway.send(cmdFinal, nil)
@@ -314,7 +322,7 @@ local function eval(rule, msg, gateway, cfg)
     _traceDump("on")
     sendCommand(rule.on.cmd, gateway, cfg)
     return true
-  elseif rule.off ~= nil and rule.off.cmd ~= nil and rule.defaultCmd == nil and evalCondition(value, rule.off, msg) then
+  elseif rule.off ~= nil and rule.off.cmd ~= nil and evalCondition(value, rule.off, msg) then
     _traceDump("off")
     sendCommand(rule.off.cmd, gateway, cfg)
     return true
