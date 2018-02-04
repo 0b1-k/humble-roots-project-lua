@@ -284,8 +284,8 @@ local function sendCommand(cmd, gateway, cfg)
 end
 
 local function eval(rule, msg, gateway, cfg)
-  if not rule.enabled then
-    log.trace("Rule disabled")
+  if rule.enabled == nil or not rule.enabled then
+    log.trace("rule disabled")
     return false
   end
   
@@ -293,27 +293,23 @@ local function eval(rule, msg, gateway, cfg)
 
   local value = tonumber(msg[rule.value])
   if value == nil then
+    _traceDump("nil value")
     return false
   end
   
   _trace(string.format("%s.%s == %s", rule.node or "_", rule.value, value))
 
-  if rule.time ~= nil then
-    local isTime = evalCondition(value, rule.time, msg)
-    if rule.off ~= nil and rule.off.cmd ~= nil and rule.defaultCmd == nil and not isTime then
-      _traceDump("off")
-      sendCommand(rule.off.cmd, gateway, cfg)
-      return true
-    elseif not isTime then
-      _traceDump("!time")
-      return false
-    end
+  if rule.time ~= nil and not evalCondition(value, rule.time, msg) then
+    _traceDump("not time")
+    return false
   end
   
   if rule.alert ~= nil and rule.node ~= nil then
     if evalCondition(value, rule.alert, msg) then
+      _traceDump("alert raised")
       sendAlert(cfg, value, rule)
     else
+      _traceDump("alert cleared")
       clearAlert(cfg, value, rule)
     end
   end
@@ -322,13 +318,21 @@ local function eval(rule, msg, gateway, cfg)
     _traceDump("on")
     sendCommand(rule.on.cmd, gateway, cfg)
     return true
-  elseif rule.off ~= nil and rule.off.cmd ~= nil and evalCondition(value, rule.off, msg) then
+  end
+  
+  if rule.off ~= nil and rule.off.cmd ~= nil and evalCondition(value, rule.off, msg) then
     _traceDump("off")
     sendCommand(rule.off.cmd, gateway, cfg)
     return true
   end
   
-  _traceDump("!")
+  if rule.cmd ~= nil then
+    _traceDump("default")
+    sendCommand(rule.cmd, gateway, cfg)
+    return true
+  end
+  
+  _traceDump("no match")
   
   return false
 end

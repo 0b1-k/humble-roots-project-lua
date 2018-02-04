@@ -96,13 +96,15 @@ local function onData(data)
           break
         end
         
+        if rule.cmd ~= nil and commandSent then
+          log.info(string.format("Command already fired. Skipping default rule action: %s.%s.%s", msgResolved.node, msgResolved.t, ruleIndex))
+          commandSent = false
+          goto next
+        end
+        
         log.info(string.format("Sensor rule: %s.%s.%s", msgResolved.node, msgResolved.t, ruleIndex))
         
         rule.node = msgResolved.node
-        
-        if _rules.cmd ~= nil then
-          rule.defaultCmd = _rules.cmd
-        end
         
         if not manualMode and rules.eval(rule, msg, gateway, cfg) then
           commandSent = true
@@ -121,7 +123,8 @@ local function onData(data)
             end
           end
         end
-      
+
+      ::next::
         ruleIndex = ruleIndex + 1
       end
       
@@ -132,12 +135,10 @@ local function onData(data)
     end
     
     if cfg.control.signal ~= nil then
-      log.trace("Rule type: signal")
       local rule = cfg.control.signal
       rule.node = msgResolved.node
-      if not manualMode then
-        rules.eval(rule, msg, gateway, cfg)
-      end
+      log.trace(string.format("Signal rule: %s.%s", msgResolved.node, rule.value))
+      rules.eval(rule, msg, gateway, cfg)
       writeMsgToDB(msgResolved, rule.value)
     end
 
