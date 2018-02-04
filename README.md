@@ -36,18 +36,18 @@ cd ~/LuaDist/share/lua-serial
 make
 
 # Copy the library to the project folder. For 32-bit platforms:
-cp ./build/lin32/libserial.so ~/LuaDist/share/weed/lua
+cp ./build/lin32/libserial.so ~/LuaDist/share/weed
 # or 64-bit platforms
-cp ./build/lin64/libserial.so ~/LuaDist/share/weed/lua
+cp ./build/lin64/libserial.so ~/LuaDist/share/weed
 
 # Compile the SMS PDU encoding / decoding library
 cd ~/LuaDist/share/smspdu
 make
 
 # Copy the library to the project folder. For 32-bit platforms
-cp ./build/lin32/smspdu.so ~/LuaDist/share/weed/lua
+cp ./build/lin32/smspdu.so ~/LuaDist/share/weed
 # or 64-bit platforms
-cp ./build/lin64/smspdu.so ~/LuaDist/share/weed/lua
+cp ./build/lin64/smspdu.so ~/LuaDist/share/weed
 
 # Copy the template config file to a usable .toml config file
 cd ~/LuaDist/share/weed/config
