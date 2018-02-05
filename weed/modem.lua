@@ -1,11 +1,10 @@
 require("serial")
-
 local smspdu = require("smspdu")
 
 local log = _ENV.log
 if log == nil then
   log = require("log")
-  log.level = "trace"
+  log.level = "info"
 end
 
 local _port = {}
@@ -19,7 +18,6 @@ local msgSelectReceiveStorageCommands = {}
 local msgReceiveCommands = {}
 local msgDeleteReceivedCommands = {}
 local msgSelectSendStorageCommands = {}
-local msgStorePduSizeCommands = {}
 local msgStorePduCommands = {}
 local msgSendCommands = {}
 local msgDeleteSentCommands = {}
@@ -148,9 +146,9 @@ local function dump(response)
   log.debug(string.format("<- %s", table.concat(response, "\n")))
 end
 
-local function onManufacturerInfo(response, context)
-  dump(response, context)
-end
+--local function onManufacturerInfo(response, context)
+--  dump(response, context)
+--end
 
 local function onSetErrorCode(response, context)
   dump(response, context)
@@ -218,12 +216,12 @@ local function onSmsMsgStoreLocation(response, context)
   end
 end
 
-local function onSmsMsgStoreToMemory(response, context)
-  dump(response, context)
-  local msg = context[3]
-  local cmd = string.format("%s%s", msg.pdu, string.char(0x1A))
-  table.insert(msgStorePduCommands, {cmd, onSmsMsgStoreLocation, msg})
-end
+--local function onSmsMsgStoreToMemory(response, context)
+--  dump(response, context)
+--  local msg = context[3]
+--  local cmd = string.format("%s%s", msg.pdu, string.char(0x1A))
+--  table.insert(msgStorePduCommands, {cmd, onSmsMsgStoreLocation, msg})
+--end
 
 local function queueMessage(phoneNumber, text)
   local pdu = smspdu.encodePdu(phoneNumber, text, "7bit")
@@ -233,7 +231,9 @@ local function queueMessage(phoneNumber, text)
     table.insert(outMessages, msg)
     msg.outMessagesIndex = #outMessages
     local cmd = string.format("at+cmgw=%s\r", pduPart.size)
-    table.insert(msgStorePduSizeCommands, {cmd, onSmsMsgStoreToMemory, msg})
+    table.insert(msgStorePduCommands, {cmd, onDevNull, msg})
+    cmd = string.format("%s%s", msg.pdu, string.char(0x1A))
+    table.insert(msgStorePduCommands, {cmd, onSmsMsgStoreLocation, msg})
   end
 end
 
@@ -268,6 +268,15 @@ local function onSetMsgStorage(response, context)
   table.insert(msgReceiveCommands, {"at+cmgl=4", onSmsMsgRead, 0})
 end
 
+local function onPurgeAllSmsMsg(response, context)
+  dump(response, context)
+end
+
+local function onPurgeSendStorage(response, context)
+  local _, _ = response, context
+  table.insert(msgSelectSendStorageCommands, {"at+cmgd=,4", onPurgeAllSmsMsg, 0})
+end
+
 local function onQueryMsgStorage(response, context)
   dump(response, context)
   for _, line in ipairs(response) do
@@ -276,7 +285,7 @@ local function onQueryMsgStorage(response, context)
       local cmd = string.format("at+cpms=\"%s\"", rcvStore)
       table.insert(msgSelectReceiveStorageCommands, {cmd, onSetMsgStorage, 0})
       cmd = string.format("at+cpms=\"%s\"", sendStore)
-      table.insert(msgSelectSendStorageCommands, {cmd, onSetMsgStorage, 0})
+      table.insert(msgSelectSendStorageCommands, {cmd, onPurgeSendStorage, 0})
       return
     end
   end
@@ -305,7 +314,6 @@ local phaseName = {
   "Receive",
   "Delete Received",
   "Select Send Storage",
-  "Store PDU Size",
   "Store PDU",
   "Send",
   "Delete Sent",
@@ -318,10 +326,9 @@ local _phaseReceive = 3
 local _phaseDeleteReceived = 4
 local _phaseSelectSendStorage = 5
 local _phaseStore = 6
-local _phaseStoreText = 7
-local _phaseSend = 8
-local _phaseDeleteSent = 9
-local _phaseShutdown = 10
+local _phaseSend = 7
+local _phaseDeleteSent = 8
+local _phaseShutdown = 9
 local _lastPhase = 0
 local _phase = _phaseInit
 local _commands = initCommands
@@ -346,7 +353,6 @@ local function reset()
   msgReceiveCommands = {}
   msgDeleteReceivedCommands = {}
   msgSelectSendStorageCommands = {}
-  msgStorePduSizeCommands = {}
   msgStorePduCommands = {}
   msgSendCommands = {}
   msgDeleteSentCommands = {}
@@ -377,8 +383,6 @@ local function onIdle()
     elseif _phase == _phaseSelectSendStorage then
       _commands = msgSelectSendStorageCommands
     elseif _phase == _phaseStore then
-      _commands = msgStorePduSizeCommands
-    elseif _phase == _phaseStoreText then
       _commands = msgStorePduCommands
     elseif _phase == _phaseSend then
       _commands = msgSendCommands
@@ -425,6 +429,9 @@ local function processMessages(port, portRangeMin, portRangeMax, baudRate)
   return inMessages
 end
 
+--[[
+local sock = require("socket")
+
 local function dumpMsg(msgList)
   log.debug("[Received Messages]")
   for _, msg in ipairs(msgList) do
@@ -436,11 +443,16 @@ end
 local function main(port)
   while true do
     reset()
-    dumpMsg(processMessages(port, 115200))
+    queueMessage("+14255551212", "Testing testing testing...")
+    queueMessage("+14255551212", "Foo, bar, baz...")
+    queueMessage("+14255551212", "1234567890()-=!@#$%^&*")
+    dumpMsg(processMessages(port, 0, 1, 115200))
+    sock.sleep(5)
   end
 end
 
---main(arg[1])
+main("/dev/ttyUSB")
+--]]
 
 local exports = {}
 exports.reset = reset
