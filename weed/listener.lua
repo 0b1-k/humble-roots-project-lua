@@ -2,8 +2,6 @@ local socket = require("socket")
 local log = _ENV.log
 
 local server = 0
-local count = 0
-local lastLine = ""
 
 local function initialize(bind, portNum)
   local err = 0
@@ -14,7 +12,7 @@ local function initialize(bind, portNum)
   end
   server:settimeout(0.01)
   local ip, port = server:getsockname()
-  log.info(string.format("Shell listening @ %s:%s", ip, tostring(port)))
+  log.info(string.format("Shell listening @ %s:%s", ip, port))
 end
 
 local function receive(onShellMsg)
@@ -22,23 +20,17 @@ local function receive(onShellMsg)
     return nil
   end
   local client = server:accept()
-  local line = ""
   if client ~= nil then
     client:settimeout(0.100)
     local line, err = client:receive()
     if not err then
-      if line ~= lastLine then
-        count = count + 1
-        lastLine = line
-        local resp = onShellMsg(line)
-        if resp ~= nil then
-          client:send(resp)
-        end
+      local resp = onShellMsg(line)
+      if resp ~= nil then
+        client:send(resp)
       end
     end
     client:close()
   end
-  return line
 end
 
 local function shutdown()
