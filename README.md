@@ -4,7 +4,7 @@ The Humble Roots Project is a grow room automation control system designed for s
 
 **Dependencies**
 
-Any platform capable of running Lua + sockets + file system support. Tested under Ubuntu 16, 17 and Raspbian.
+Any platform capable of running Lua + sockets + file system support. Tested under Ubuntu 16, 17, 18+ and Raspbian.
 
 ***CMake***
 
