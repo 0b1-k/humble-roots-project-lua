@@ -11,7 +11,7 @@ local function load(path)
     end
     file:close()
   end
-  log.trace(string.format("Replay data lines: %s", tostring(#data)))
+  log.trace(string.format("Replay data lines: %s", #data))
   return data, 1
 end
 

@@ -26,15 +26,16 @@ local cfgFileInfo = nil
 local function getConfig(path)
   cfgFileInfo = getFileChangeInfoObj(path)
   local cfgFile = io.open(path, "r")
-  local rawJson = cfgFile:read("*a")
+  local content = cfgFile:read("*a")
   cfgFile:close()
-  local json = require("dkjson")
-  local cfg, _, err = json.decode(rawJson, 1, nil)
-  rawJson = nil
-  json = nil
+  
+  local toml = require("toml")
+  local cfg, err = toml.parse(content, {strict = true})
+  content = nil
+  toml = nil
   collectgarbage()
   if err then
-    error(string.format("Invalid JSON: %s", err))
+    error(string.format("Invalid .toml: %s", err))
     os.exit()
   end
   return cfg

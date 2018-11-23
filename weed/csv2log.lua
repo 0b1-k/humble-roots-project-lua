@@ -54,12 +54,12 @@ local function main(csvFile)
     if linesRead > 1 then
       local result = db.post(cfg.influxDB.host, cfg.influxDB.port, cfg.influxDB.events)
       if result then
-        print(string.format("Wrote %s lines to InfluxDB", tostring(linesRead)))
+        print(string.format("Wrote %s lines to InfluxDB", linesRead))
       else
         print("Failed to write data to InfluxDB. See error for details.")
       end
     else
-      print("No data was written to InfluxDB. Check that %s is a valid .csv file", tostring(linesRead), csvFile)
+      print("No data was written to InfluxDB. Check that %s is a valid .csv file", linesRead, csvFile)
     end
   else
     error(string.format("Cannot write %s to db because InfluxDB is not enabled in %s", csvFile, cfgFilePath))

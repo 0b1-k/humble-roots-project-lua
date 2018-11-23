@@ -34,15 +34,15 @@ end
 
 local function getServerUrl(address, port, db)
   if #precision > 0 then
-    return string.format("http://%s:%s/write?db=%s&precision=%s", address, tostring(port), db, precision)
+    return string.format("http://%s:%s/write?db=%s&precision=%s", address, port, db, precision)
   else
-    return string.format("http://%s:%s/write?db=%s", address, tostring(port), db)
+    return string.format("http://%s:%s/write?db=%s", address, port, db)
   end
 end
 
 local function appendTimeStamp(timestamp)
   if timestamp ~= nil then
-    return string.format(" %s", tostring(timestamp))
+    return string.format(" %s", timestamp)
   else
     return ""
   end
@@ -56,22 +56,22 @@ local function push(data, valueId, timestamp)
   local valueData = 0
   for n, v in pairs(data) do
       if n ~= valueId then
-          table.insert(scratch, string.format("%s=%s", tostring(n), tostring(v)))
+          table.insert(scratch, string.format("%s=%s", n, v))
       else
           valueData = tostring(v)
       end
   end
-  local line = string.format("%s,%s value=%s%s", valueId, table.concat(scratch, ","), tostring(valueData), appendTimeStamp(timestamp))
+  local line = string.format("%s,%s value=%s%s", valueId, table.concat(scratch, ","), valueData, appendTimeStamp(timestamp))
   table.insert(body, line)
 end
 
 local function pushSingleValue(measurement, tag, value, timestamp)
-  local line = string.format("%s,tag=%s value=%s%s", measurement, tag, tostring(value), appendTimeStamp(timestamp))
+  local line = string.format("%s,tag=%s value=%s%s", measurement, tag, value, appendTimeStamp(timestamp))
   table.insert(body, line)
 end
 
 local function pushEvent(measurement, level, tag, text, timestamp)
-  local line = string.format("%s,level=%s,tag=%s level=\"%s\",text=\"%s\"%s", measurement, level, tag, level, tostring(text), appendTimeStamp(timestamp))
+  local line = string.format("%s,level=%s,tag=%s level=\"%s\",text=\"%s\"%s", measurement, level, tag, level, text, appendTimeStamp(timestamp))
   table.insert(body, line)
 end
 
@@ -91,7 +91,7 @@ local function postUDP(address, port)
   end
   result, err = sock:send(reqbody)
   if result == nil then
-    print(string.format("UDP socket error: %s, msg: %s, len: %s", err, reqbody, tostring(#reqbody)))
+    print(string.format("UDP socket error: %s, msg: %s, len: %s", err, reqbody, #reqbody))
   end
 end
 

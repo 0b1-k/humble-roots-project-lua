@@ -18,7 +18,7 @@ local function send(cmdFinal, retryObj)
   local sentBytes = port:write(cmdFinal .. "\n")
   port:drainTX()
   if sentBytes ~= #cmdFinal + #"\n" then
-    local errorMsg = string.format("Failed serial write(%s). Sent bytes: %s ~= %s", cmdFinal, tostring(sentBytes), tostring(#cmdFinal))
+    local errorMsg = string.format("Failed serial write(%s). Sent bytes: %s ~= %s", cmdFinal, sentBytes, #cmdFinal)
     log.fatal(errorMsg)
     error(errorMsg)
   end
@@ -26,7 +26,7 @@ local function send(cmdFinal, retryObj)
     retryQueue[cmdFinal] = getRetryObj()
   end
   log.trace(string.format("Sent: %s", cmdFinal))
-  _ENV.io.Serial.del_us(1000 * 10)
+  --_ENV.io.Serial.del_us(1000 * 10)
 end
 
 local function retry(msg)
@@ -45,7 +45,7 @@ local function retry(msg)
     retryObj.retries = retryObj.retries - 1
     if retryObj.retries > 0 then
       send(cmdFinal, retryObj)
-      log.debug(string.format("Retry: %s (#%s)", cmdFinal, tostring(retryObj.retries)))
+      log.debug(string.format("Retry: %s (#%s)", cmdFinal, retryObj.retries))
     else
       log.info(string.format("Retries exceeded: %s", cmdFinal))
       retryQueue[cmdFinal] = nil
