@@ -88,6 +88,7 @@ local function postUDP(address, port)
   local result, err = sock:setpeername(address or "127.0.0.1", port or 8089)
   if result == nil then
     print(string.format("Failed to set UDP socket peer name, error: %s", err))
+    return
   end
   result, err = sock:send(reqbody)
   if result == nil then
