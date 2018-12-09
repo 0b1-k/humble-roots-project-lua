@@ -80,7 +80,19 @@ local function onData(data)
   if msg.node ~= nil and msg.tx == nil and msg.t ~= nil and msgResolved.node ~= nil then
     -- sensor data was received...
     heartbeat.pulse(msgResolved.node)
-    local _rules = cfg.control[msgResolved.node][msgResolved.t]
+    
+    local _rulesNode = cfg.control[msgResolved.node]
+    if _rulesNode == nil then
+      log.warn(string.format("Config out of sync! Invalid node %s referenced in packet: %s", msg.node, data))
+      return
+    end
+    
+    local _rules = _rulesNode[msgResolved.t]
+    if _rules == nil then
+      log.warn(string.format("Config out of sync! Invalid type %s referenced in packet: %s", msg.t, data))
+      return
+    end
+
     local anyCommandSent = false
     
     if _rules ~= nil then
@@ -180,7 +192,7 @@ local function onShellMsg(line)
     if cmdFinal ~= nil then
       log.warn(string.format("Sent shell command: %s", cmdFinal))
     else
-      local err = string.format("Bad shell command param(s): %s", line)
+      local err = string.format("Bad param(s) / duplicate command: %s, cmdFinal: %s", line, cmdFinal)
       log.error(err)
       return err
     end
@@ -274,7 +286,7 @@ log.info("The Humble Roots Project")
 log.info(logo.get("./ascii_lf.drg"))
 log.info("Copyright (c) 2015-2018 by Fabien Royer")
 
---require("mobdebug").start("10.0.0.120")
+--require("mobdebug").start()
 
 while true do
   listening = false
